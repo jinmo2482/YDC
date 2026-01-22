@@ -1,0 +1,23 @@
+package com.example.groundcontrolapp
+
+data class DroneState(
+    val connected: Boolean = false,
+    val lastHeartbeatMs: Long = 0L,
+    val mode: String? = null,
+    val armed: Boolean? = null,
+    val batteryPercent: Float? = null,
+    val batteryVoltage: Float? = null,
+    val batteryCurrent: Float? = null,
+    val gpsFix: Int? = null,
+    val satellites: Int? = null,
+    val lat: Double? = null,
+    val lon: Double? = null,
+    val altM: Double? = null,
+    val relAltM: Double? = null,
+    val vx: Double? = null,
+    val vy: Double? = null,
+    val vz: Double? = null,
+    val roll: Double? = null,
+    val pitch: Double? = null,
+    val yaw: Double? = null,
+)
