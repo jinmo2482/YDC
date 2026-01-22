@@ -368,8 +368,37 @@
                 android:text="开始探索" />
         </LinearLayout>
 
+            <Button
+                android:id="@+id/btnNavStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="状态" />
+
+            <Button
+                android:id="@+id/btnNavExplore"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="探索" />
+
+            <Button
+                android:id="@+id/btnNavVideo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="视频" />
+
+            <Button
+                android:id="@+id/btnNavMap"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="地图" />
         </LinearLayout>
-    </ScrollView>
 
     <!-- 底部导航（固定） -->
     <LinearLayout
