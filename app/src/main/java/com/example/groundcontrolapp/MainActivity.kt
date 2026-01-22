@@ -26,8 +26,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var explState: TextView
     private lateinit var posText: TextView
 
-    // 日志（最多三行）
+    // 日志（最多 50 行）
     private lateinit var tvLog: TextView
+    private lateinit var logScroll: ScrollView
     private val logs: ArrayDeque<String> = ArrayDeque()
 
     // 设置/测试
@@ -62,6 +63,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // MAVLink Direct
+    private var mavlinkClient: MavlinkTcpClient? = null
+    @Volatile private var directMode = false
+    @Volatile private var lastMavlinkState = DroneState()
+    private val mavlinkUiIntervalMs = 200L
+    private val mavlinkUiRunnable = object : Runnable {
+        override fun run() {
+            if (!directMode) return
+            updateUiFromMavlink(lastMavlinkState)
+            ui.postDelayed(this, mavlinkUiIntervalMs)
+        }
+    }
+
     // 防重入
     @Volatile private var busy = false
 
@@ -77,9 +91,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableImmersiveFullscreen()
-        tvBaseUrl.text = AppPrefs.baseUrl(this)
-        startPolling()
-        loadBox()
+        directMode = AppPrefs.useDirectMavlink(this)
+        if (directMode) {
+            startDirectMavlink()
+        } else {
+            setBackendEnabled(true)
+            tvBaseUrl.text = AppPrefs.baseUrl(this)
+            startPolling()
+            loadBox()
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -90,6 +110,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopPolling()
+        stopDirectMavlink()
     }
 
     private fun enableImmersiveFullscreen() {
@@ -122,6 +143,7 @@ class MainActivity : AppCompatActivity() {
         explState = findViewById(R.id.explState)
         posText = findViewById(R.id.posText)
 
+        logScroll = findViewById(R.id.logScroll)
         tvLog = findViewById(R.id.tvLog)
 
         btnSettings = findViewById(R.id.btnSettings)
@@ -147,6 +169,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnHealth.setOnClickListener {
+            if (directMode) {
+                addLog("Direct MAVLink 模式下不支持 HTTP 测试")
+                return@setOnClickListener
+            }
             val base = AppPrefs.baseUrl(this)
             addLog("GET $base/api/health")
             thread {
@@ -182,6 +208,47 @@ class MainActivity : AppCompatActivity() {
     private fun stopPolling() {
         polling = false
         ui.removeCallbacks(pollRunnable)
+    }
+
+    private fun startDirectMavlink() {
+        stopPolling()
+        setBackendEnabled(false)
+        explState.text = "Direct MAVLink"
+        val host = AppPrefs.getMavlinkHost(this)
+        val port = AppPrefs.getMavlinkPort(this)
+        tvBaseUrl.text = "tcp://$host:$port"
+        addLog("启用 Direct MAVLink：tcp://$host:$port")
+        mavlinkClient?.stop()
+        mavlinkClient = MavlinkTcpClient(
+            host = host,
+            port = port,
+            callbacks = object : MavlinkTcpClient.Callbacks {
+                override fun onStateUpdate(state: DroneState) {
+                    lastMavlinkState = state
+                }
+
+                override fun onLogLine(line: String) {
+                    runOnUiThread { addLog(line) }
+                }
+
+                override fun onConnectionState(connected: Boolean) {
+                    runOnUiThread {
+                        val color = if (connected) 0xFF42D37C.toInt() else 0xFFFF5D5D.toInt()
+                        connTxt.text = if (connected) "ML" else "--"
+                        connTxt.setTextColor(color)
+                    }
+                }
+            },
+        ).also { it.start() }
+        ui.removeCallbacks(mavlinkUiRunnable)
+        ui.post(mavlinkUiRunnable)
+    }
+
+    private fun stopDirectMavlink() {
+        directMode = false
+        ui.removeCallbacks(mavlinkUiRunnable)
+        mavlinkClient?.stop()
+        mavlinkClient = null
     }
 
     private fun pollStatusOnce() {
@@ -256,15 +323,16 @@ class MainActivity : AppCompatActivity() {
         return "--"
     }
 
-    // ====== 日志：最多三行 ======
+    // ====== 日志：最多 50 行 ======
     private fun addLog(line: String) {
         val clean = line.trim()
         if (clean.isEmpty()) return
 
         logs.addLast(clean)
-        while (logs.size > 3) logs.removeFirst()
+        while (logs.size > 50) logs.removeFirst()
 
         tvLog.text = logs.joinToString("\n")
+        logScroll.post { logScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun toast(t: String) {
@@ -438,5 +506,59 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes.isEnabled = enabled
         btnStopNodes.isEnabled = enabled
         btnStartMission.isEnabled = enabled
+    }
+
+    private fun setBackendEnabled(enabled: Boolean) {
+        btnHealth.isEnabled = enabled
+        btnSaveBox.isEnabled = enabled
+        btnLoadBox.isEnabled = enabled
+        btnStartNodes.isEnabled = enabled
+        btnStopNodes.isEnabled = enabled
+        btnStartMission.isEnabled = enabled
+        if (!enabled) {
+            explState.text = "Direct MAVLink（backend disabled）"
+        }
+    }
+
+    private fun updateUiFromMavlink(state: DroneState) {
+        val now = System.currentTimeMillis()
+        val heartbeatOk = state.lastHeartbeatMs > 0 && now - state.lastHeartbeatMs < 2000L
+        connTxt.text = if (heartbeatOk) "ML" else "--"
+        connTxt.setTextColor(if (heartbeatOk) 0xFF42D37C.toInt() else 0xFFFF5D5D.toInt())
+
+        slMode.text = "M ${state.mode ?: "--"}"
+        val armed = state.armed == true
+        slArm.text = if (armed) "A ARM" else "A DIS"
+        slArm.setTextColor(if (armed) 0xFF42D37C.toInt() else 0xFFFFD166.toInt())
+
+        val battText = buildString {
+            when {
+                state.batteryPercent != null -> append("${state.batteryPercent.roundToInt()}%")
+                else -> append("--")
+            }
+            if (state.batteryVoltage != null) {
+                append(" ")
+                append("%.1fV".format(state.batteryVoltage))
+            }
+            if (state.batteryCurrent != null) {
+                append(" ")
+                append("%.1fA".format(state.batteryCurrent))
+            }
+        }
+        slBatt.text = "B $battText"
+
+        val lat = state.lat?.let { "%.6f".format(it) } ?: "--"
+        val lon = state.lon?.let { "%.6f".format(it) } ?: "--"
+        val alt = state.altM?.let { "%.1f".format(it) } ?: "--"
+        val relAlt = state.relAltM?.let { "%.1f".format(it) } ?: "--"
+        val fix = state.gpsFix?.toString() ?: "--"
+        val sats = state.satellites?.toString() ?: "--"
+        val att = if (state.roll != null && state.pitch != null && state.yaw != null) {
+            " r:${"%.0f".format(state.roll)} p:${"%.0f".format(state.pitch)} y:${"%.0f".format(state.yaw)}"
+        } else {
+            ""
+        }
+        posText.text =
+            "fix:$fix sat:$sats lat:$lat lon:$lon alt:$alt rel:$relAlt$att"
     }
 }
