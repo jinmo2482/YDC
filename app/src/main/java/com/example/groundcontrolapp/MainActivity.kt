@@ -28,12 +28,11 @@ class MainActivity : AppCompatActivity() {
 
     // 日志（最多 50 行）
     private lateinit var tvLog: TextView
-    private lateinit var logScroll: ScrollView
+    private lateinit var mainScroll: ScrollView
     private val logs: ArrayDeque<String> = ArrayDeque()
 
-    // 设置/测试
-    private lateinit var btnSettings: Button
-    private lateinit var btnHealth: Button
+    // 设置
+    private lateinit var btnSettings: ImageButton
 
     // box 输入
     private lateinit var boxMinX: EditText
@@ -49,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnStartNodes: Button
     private lateinit var btnStopNodes: Button
     private lateinit var btnStartMission: Button
+    private lateinit var btnNavStatus: Button
+    private lateinit var btnNavExplore: Button
+    private lateinit var btnNavVideo: Button
+    private lateinit var btnNavMap: Button
 
     // polling
     private val ui = Handler(Looper.getMainLooper())
@@ -143,11 +146,10 @@ class MainActivity : AppCompatActivity() {
         explState = findViewById(R.id.explState)
         posText = findViewById(R.id.posText)
 
-        logScroll = findViewById(R.id.logScroll)
+        mainScroll = findViewById(R.id.mainScroll)
         tvLog = findViewById(R.id.tvLog)
 
         btnSettings = findViewById(R.id.btnSettings)
-        btnHealth = findViewById(R.id.btnHealth)
 
         boxMinX = findViewById(R.id.box_min_x)
         boxMinY = findViewById(R.id.box_min_y)
@@ -161,34 +163,15 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes = findViewById(R.id.btnStartNodes)
         btnStopNodes = findViewById(R.id.btnStopNodes)
         btnStartMission = findViewById(R.id.btnStartMission)
+        btnNavStatus = findViewById(R.id.btnNavStatus)
+        btnNavExplore = findViewById(R.id.btnNavExplore)
+        btnNavVideo = findViewById(R.id.btnNavVideo)
+        btnNavMap = findViewById(R.id.btnNavMap)
     }
 
     private fun setupButtons() {
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
-        }
-
-        btnHealth.setOnClickListener {
-            if (directMode) {
-                addLog("Direct MAVLink 模式下不支持 HTTP 测试")
-                return@setOnClickListener
-            }
-            val base = AppPrefs.baseUrl(this)
-            addLog("GET $base/api/health")
-            thread {
-                try {
-                    val json = ApiClient.get("$base/api/health")
-                    runOnUiThread {
-                        toast("✅ 连接成功")
-                        addLog("health: $json")
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        toast("❌ 连接失败")
-                        addLog("health err: ${e.message}")
-                    }
-                }
-            }
         }
 
         btnLoadBox.setOnClickListener { loadBox() }
@@ -197,6 +180,19 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes.setOnClickListener { startNodes() }
         btnStopNodes.setOnClickListener { stopNodes() }
         btnStartMission.setOnClickListener { startMission() }
+
+        btnNavStatus.setOnClickListener {
+            mainScroll.smoothScrollTo(0, 0)
+        }
+        btnNavExplore.setOnClickListener {
+            startActivity(Intent(this, ExploreActivity::class.java))
+        }
+        btnNavVideo.setOnClickListener {
+            startActivity(Intent(this, VideoActivity::class.java))
+        }
+        btnNavMap.setOnClickListener {
+            startActivity(Intent(this, MapActivity::class.java))
+        }
     }
 
     private fun startPolling() {
@@ -332,11 +328,7 @@ class MainActivity : AppCompatActivity() {
         while (logs.size > 50) logs.removeFirst()
 
         tvLog.text = logs.joinToString("\n")
-        logScroll.post { logScroll.fullScroll(View.FOCUS_DOWN) }
-    }
-
-    private fun toast(t: String) {
-        Toast.makeText(this, t, Toast.LENGTH_SHORT).show()
+        mainScroll.post { mainScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
     // ====== Box：读取/保存 ======
@@ -500,21 +492,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun setButtonsEnabled(enabled: Boolean) {
         btnSettings.isEnabled = enabled
-        btnHealth.isEnabled = enabled
         btnSaveBox.isEnabled = enabled
         btnLoadBox.isEnabled = enabled
         btnStartNodes.isEnabled = enabled
         btnStopNodes.isEnabled = enabled
         btnStartMission.isEnabled = enabled
+        btnNavStatus.isEnabled = enabled
+        btnNavExplore.isEnabled = enabled
+        btnNavVideo.isEnabled = enabled
+        btnNavMap.isEnabled = enabled
     }
 
     private fun setBackendEnabled(enabled: Boolean) {
-        btnHealth.isEnabled = enabled
         btnSaveBox.isEnabled = enabled
         btnLoadBox.isEnabled = enabled
         btnStartNodes.isEnabled = enabled
         btnStopNodes.isEnabled = enabled
         btnStartMission.isEnabled = enabled
+        btnNavStatus.isEnabled = enabled
+        btnNavExplore.isEnabled = enabled
+        btnNavVideo.isEnabled = enabled
+        btnNavMap.isEnabled = enabled
         if (!enabled) {
             explState.text = "Direct MAVLink（backend disabled）"
         }
