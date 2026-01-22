@@ -26,10 +26,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var explState: TextView
     private lateinit var posText: TextView
 
-    // 日志（最多 50 行）
+    // 日志（主界面显示最多 5 行）
     private lateinit var tvLog: TextView
     private lateinit var mainScroll: ScrollView
-    private val logs: ArrayDeque<String> = ArrayDeque()
 
     // 设置
     private lateinit var btnSettings: ImageButton
@@ -94,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         enableImmersiveFullscreen()
         tvBaseUrl.text = AppPrefs.baseUrl(this)
+        tvLog.text = LogStore.latest(5).joinToString("\n")
         startMavlinkClient()
         startPolling()
         loadBox()
@@ -144,6 +144,10 @@ class MainActivity : AppCompatActivity() {
         tvLog = findViewById(R.id.tvLog)
 
         btnSettings = findViewById(R.id.btnSettings)
+
+        tvLog.setOnClickListener {
+            startActivity(Intent(this, LogHistoryActivity::class.java))
+        }
 
         boxMinX = findViewById(R.id.box_min_x)
         boxMinY = findViewById(R.id.box_min_y)
@@ -256,15 +260,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    // ====== 日志：最多 50 行 ======
+    // ====== 日志：主界面最多 5 行 ======
     private fun addLog(line: String) {
         val clean = line.trim()
         if (clean.isEmpty()) return
 
-        logs.addLast(clean)
-        while (logs.size > 50) logs.removeFirst()
-
-        tvLog.text = logs.joinToString("\n")
+        LogStore.add(clean)
+        tvLog.text = LogStore.latest(5).joinToString("\n")
         mainScroll.post { mainScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
@@ -446,9 +448,9 @@ class MainActivity : AppCompatActivity() {
         connTxt.text = if (heartbeatOk) "ML" else "--"
         connTxt.setTextColor(if (heartbeatOk) 0xFF42D37C.toInt() else 0xFFFF5D5D.toInt())
 
-        slMode.text = "M ${state.mode ?: "--"}"
+        slMode.text = "飞行模式 ${state.mode ?: "--"}"
         val armed = state.armed == true
-        slArm.text = if (armed) "A ARM" else "A DIS"
+        slArm.text = if (armed) "解锁状态 已解锁" else "解锁状态 未解锁"
         slArm.setTextColor(if (armed) 0xFF42D37C.toInt() else 0xFFFFD166.toInt())
 
         val battText = buildString {
@@ -465,7 +467,7 @@ class MainActivity : AppCompatActivity() {
                 append("%.1fA".format(state.batteryCurrent))
             }
         }
-        slBatt.text = "B $battText"
+        slBatt.text = "电池电量 $battText"
 
         val lat = state.lat?.let { "%.6f".format(it) } ?: "--"
         val lon = state.lon?.let { "%.6f".format(it) } ?: "--"

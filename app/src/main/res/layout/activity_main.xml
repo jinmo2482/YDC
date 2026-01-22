@@ -28,6 +28,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
+                    android:letterSpacing="0.1"
                     android:text="无人机自主探索系统"
                     android:textColor="#eaeaea"
                     android:textSize="20sp"
@@ -69,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:background="#171718"
                     android:padding="8dp"
-                    android:text="M --"
+                    android:text="飞行模式 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
 
@@ -80,7 +81,7 @@
                     android:layout_marginStart="8dp"
                     android:background="#171718"
                     android:padding="8dp"
-                    android:text="A --"
+                    android:text="解锁状态 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
 
@@ -91,7 +92,7 @@
                     android:layout_marginStart="8dp"
                     android:background="#171718"
                     android:padding="8dp"
-                    android:text="B --"
+                    android:text="电池电量 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
 
@@ -166,33 +167,6 @@
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
-            </LinearLayout>
-
-            <!-- 日志 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="#121213"
-                android:orientation="vertical"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="日志"
-                    android:textColor="#aaaaaa"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/tvLog"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:minHeight="120dp"
-                    android:text="log..."
-                    android:textColor="#eaeaea"
-                    android:textSize="12sp" />
             </LinearLayout>
 
             <!-- 探索范围 panel -->
@@ -335,6 +309,35 @@
                             android:text="读取" />
                     </LinearLayout>
                 </LinearLayout>
+            </LinearLayout>
+
+            <!-- 日志 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#121213"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="日志"
+                    android:textColor="#aaaaaa"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:minHeight="120dp"
+                    android:text="log..."
+                    android:textColor="#eaeaea"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <!-- 三按钮 -->
