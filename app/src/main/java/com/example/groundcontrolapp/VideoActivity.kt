@@ -9,6 +9,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
@@ -75,8 +76,27 @@ class VideoActivity : AppCompatActivity() {
     private fun initializePlayer() {
         if (player != null) return
         val rtspUrl = AppPrefs.getRtspUrl(this)
-        val mediaItem = MediaItem.fromUri(rtspUrl)
-        player = ExoPlayer.Builder(this).build().also { exoPlayer ->
+        val liveConfiguration = MediaItem.LiveConfiguration.Builder()
+            .setTargetOffsetMs(500)
+            .setMinOffsetMs(200)
+            .setMaxOffsetMs(1200)
+            .build()
+        val mediaItem = MediaItem.Builder()
+            .setUri(rtspUrl)
+            .setLiveConfiguration(liveConfiguration)
+            .build()
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                500,
+                1500,
+                200,
+                200
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+        player = ExoPlayer.Builder(this)
+            .setLoadControl(loadControl)
+            .build().also { exoPlayer ->
             playerView.player = exoPlayer
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
