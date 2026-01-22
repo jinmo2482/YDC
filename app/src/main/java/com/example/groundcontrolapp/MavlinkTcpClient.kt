@@ -87,7 +87,7 @@ class MavlinkTcpClient(
         when (payload) {
             is Heartbeat -> {
                 val mode = formatMode(payload)
-                val armed = payload.baseMode.contains(MavModeFlag.SAFETY_ARMED)
+                val armed = payload.baseMode().flags().contains(MavModeFlag.SAFETY_ARMED)
                 updateState {
                     it.copy(
                         lastHeartbeatMs = System.currentTimeMillis(),
@@ -98,9 +98,9 @@ class MavlinkTcpClient(
             }
 
             is SysStatus -> {
-                val percent = payload.batteryRemaining.takeIf { it >= 0 }?.toFloat()
-                val voltage = payload.voltageBattery.takeIf { it > 0 }?.div(1000f)
-                val current = payload.currentBattery.takeIf { it > -1 }?.div(100f)
+                val percent = payload.batteryRemaining().takeIf { it >= 0 }?.toFloat()
+                val voltage = payload.voltageBattery().takeIf { it > 0 }?.div(1000f)
+                val current = payload.currentBattery().takeIf { it > -1 }?.div(100f)
                 updateState {
                     it.copy(
                         batteryPercent = percent,
@@ -111,10 +111,10 @@ class MavlinkTcpClient(
             }
 
             is BatteryStatus -> {
-                val percent = payload.batteryRemaining.takeIf { it >= 0 }?.toFloat()
-                val voltageMv = payload.voltages.firstOrNull { it > 0 } ?: -1
+                val percent = payload.batteryRemaining().takeIf { it >= 0 }?.toFloat()
+                val voltageMv = payload.voltages().firstOrNull { it > 0 } ?: -1
                 val voltage = if (voltageMv > 0) voltageMv / 1000f else null
-                val current = payload.currentBattery.takeIf { it > -1 }?.div(100f)
+                val current = payload.currentBattery().takeIf { it > -1 }?.div(100f)
                 updateState {
                     it.copy(
                         batteryPercent = percent ?: it.batteryPercent,
@@ -125,13 +125,13 @@ class MavlinkTcpClient(
             }
 
             is GpsRawInt -> {
-                val lat = payload.lat.takeIf { it != 0 }?.div(1e7)
-                val lon = payload.lon.takeIf { it != 0 }?.div(1e7)
-                val alt = payload.alt.takeIf { it != 0 }?.div(1000.0)
+                val lat = payload.lat().takeIf { it != 0 }?.div(1e7)
+                val lon = payload.lon().takeIf { it != 0 }?.div(1e7)
+                val alt = payload.alt().takeIf { it != 0 }?.div(1000.0)
                 updateState {
                     it.copy(
-                        gpsFix = payload.fixType.toInt(),
-                        satellites = payload.satellitesVisible.toInt(),
+                        gpsFix = payload.fixType().value().ordinal,
+                        satellites = payload.satellitesVisible(),
                         lat = lat ?: it.lat,
                         lon = lon ?: it.lon,
                         altM = alt ?: it.altM,
@@ -140,19 +140,19 @@ class MavlinkTcpClient(
             }
 
             is GlobalPositionInt -> {
-                val lat = payload.lat.takeIf { it != 0 }?.div(1e7)
-                val lon = payload.lon.takeIf { it != 0 }?.div(1e7)
-                val alt = payload.alt.takeIf { it != 0 }?.div(1000.0)
-                val relAlt = payload.relativeAlt.takeIf { it != 0 }?.div(1000.0)
+                val lat = payload.lat().takeIf { it != 0 }?.div(1e7)
+                val lon = payload.lon().takeIf { it != 0 }?.div(1e7)
+                val alt = payload.alt().takeIf { it != 0 }?.div(1000.0)
+                val relAlt = payload.relativeAlt().takeIf { it != 0 }?.div(1000.0)
                 updateState {
                     it.copy(
                         lat = lat ?: it.lat,
                         lon = lon ?: it.lon,
                         altM = alt ?: it.altM,
                         relAltM = relAlt ?: it.relAltM,
-                        vx = payload.vx / 100.0,
-                        vy = payload.vy / 100.0,
-                        vz = payload.vz / 100.0,
+                        vx = payload.vx() / 100.0,
+                        vy = payload.vy() / 100.0,
+                        vz = payload.vz() / 100.0,
                     )
                 }
             }
@@ -160,16 +160,16 @@ class MavlinkTcpClient(
             is Attitude -> {
                 updateState {
                     it.copy(
-                        roll = Math.toDegrees(payload.roll.toDouble()),
-                        pitch = Math.toDegrees(payload.pitch.toDouble()),
-                        yaw = Math.toDegrees(payload.yaw.toDouble()),
+                        roll = Math.toDegrees(payload.roll().toDouble()),
+                        pitch = Math.toDegrees(payload.pitch().toDouble()),
+                        yaw = Math.toDegrees(payload.yaw().toDouble()),
                     )
                 }
             }
 
             is Statustext -> {
-                val prefix = severityPrefix(payload.severity.toInt())
-                val text = payload.text.trim { it <= ' ' }
+                val prefix = severityPrefix(payload.severity().value().ordinal)
+                val text = payload.text().trim { it <= ' ' }
                 if (text.isNotEmpty()) {
                     callbacks.onLogLine("$prefix $text")
                 }
@@ -187,15 +187,15 @@ class MavlinkTcpClient(
 
     private fun formatMode(heartbeat: Heartbeat): String {
         val flags = mutableListOf<String>()
-        if (heartbeat.baseMode.contains(MavModeFlag.AUTO_ENABLED)) {
+        if (heartbeat.baseMode().flags().contains(MavModeFlag.AUTO_ENABLED)) {
             flags.add("AUTO")
-        } else if (heartbeat.baseMode.contains(MavModeFlag.MANUAL_INPUT_ENABLED)) {
+        } else if (heartbeat.baseMode().flags().contains(MavModeFlag.MANUAL_INPUT_ENABLED)) {
             flags.add("MANUAL")
         }
-        if (heartbeat.baseMode.contains(MavModeFlag.GUIDED_ENABLED)) {
+        if (heartbeat.baseMode().flags().contains(MavModeFlag.GUIDED_ENABLED)) {
             flags.add("GUIDED")
         }
-        val custom = heartbeat.customMode
+        val custom = heartbeat.customMode()
         return if (flags.isNotEmpty()) {
             flags.joinToString("/")
         } else {
