@@ -5,10 +5,10 @@ import io.dronefleet.mavlink.common.Attitude
 import io.dronefleet.mavlink.common.BatteryStatus
 import io.dronefleet.mavlink.common.GlobalPositionInt
 import io.dronefleet.mavlink.common.GpsRawInt
-import io.dronefleet.mavlink.common.Heartbeat
-import io.dronefleet.mavlink.common.MavModeFlag
 import io.dronefleet.mavlink.common.Statustext
 import io.dronefleet.mavlink.common.SysStatus
+import io.dronefleet.mavlink.minimal.Heartbeat
+import io.dronefleet.mavlink.minimal.MavModeFlag
 import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.concurrent.thread
@@ -87,7 +87,10 @@ class MavlinkTcpClient(
         when (payload) {
             is Heartbeat -> {
                 val mode = formatMode(payload)
-                val armed = payload.baseMode().flags().contains(MavModeFlag.SAFETY_ARMED)
+
+                // ✅ EnumValue 的 flag 判断用 flagsEnabled(...)，不是 flags()
+                val armed = payload.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_SAFETY_ARMED)
+
                 updateState {
                     it.copy(
                         lastHeartbeatMs = System.currentTimeMillis(),
@@ -128,9 +131,13 @@ class MavlinkTcpClient(
                 val lat = payload.lat().takeIf { it != 0 }?.div(1e7)
                 val lon = payload.lon().takeIf { it != 0 }?.div(1e7)
                 val alt = payload.alt().takeIf { it != 0 }?.div(1000.0)
+
+                // ✅ EnumValue.value() 直接给“数值”，不要 .ordinal
+                val fix = payload.fixType().value()
+
                 updateState {
                     it.copy(
-                        gpsFix = payload.fixType().value().ordinal,
+                        gpsFix = fix,
                         satellites = payload.satellitesVisible(),
                         lat = lat ?: it.lat,
                         lon = lon ?: it.lon,
@@ -168,7 +175,8 @@ class MavlinkTcpClient(
             }
 
             is Statustext -> {
-                val prefix = severityPrefix(payload.severity().value().ordinal)
+                // ✅ severity() 也是 EnumValue，直接用 value() 数值，不要 ordinal
+                val prefix = severityPrefix(payload.severity().value())
                 val text = payload.text().trim { it <= ' ' }
                 if (text.isNotEmpty()) {
                     callbacks.onLogLine("$prefix $text")
@@ -186,18 +194,22 @@ class MavlinkTcpClient(
     }
 
     private fun formatMode(heartbeat: Heartbeat): String {
-        val flags = mutableListOf<String>()
-        if (heartbeat.baseMode().flags().contains(MavModeFlag.AUTO_ENABLED)) {
-            flags.add("AUTO")
-        } else if (heartbeat.baseMode().flags().contains(MavModeFlag.MANUAL_INPUT_ENABLED)) {
-            flags.add("MANUAL")
+        val parts = mutableListOf<String>()
+
+        // ✅ 还是用 flagsEnabled(...) 来判断
+        if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_AUTO_ENABLED)) {
+            parts.add("AUTO")
+        } else if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED)) {
+            parts.add("MANUAL")
         }
-        if (heartbeat.baseMode().flags().contains(MavModeFlag.GUIDED_ENABLED)) {
-            flags.add("GUIDED")
+
+        if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_GUIDED_ENABLED)) {
+            parts.add("GUIDED")
         }
+
         val custom = heartbeat.customMode()
-        return if (flags.isNotEmpty()) {
-            flags.joinToString("/")
+        return if (parts.isNotEmpty()) {
+            parts.joinToString("/")
         } else {
             "CM:${custom.toInt()}"
         }
