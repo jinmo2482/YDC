@@ -21,18 +21,21 @@ class SettingsActivity : AppCompatActivity() {
         val etPort = findViewById<EditText>(R.id.etPort)
         val etMavlinkHost = findViewById<EditText>(R.id.etMavlinkHost)
         val etMavlinkPort = findViewById<EditText>(R.id.etMavlinkPort)
+        val etRtspUrl = findViewById<EditText>(R.id.etRtspUrl)
         findViewById<Button>(R.id.btnBack).setOnClickListener { finish() }
 
         etHost.setText(AppPrefs.getHost(this))
         etPort.setText(AppPrefs.getPort(this).toString())
         etMavlinkHost.setText(AppPrefs.getMavlinkHost(this))
         etMavlinkPort.setText(AppPrefs.getMavlinkPort(this).toString())
+        etRtspUrl.setText(AppPrefs.getRtspUrl(this))
 
         findViewById<Button>(R.id.btnSave).setOnClickListener {
             val host = etHost.text.toString().trim()
             val port = etPort.text.toString().trim().toIntOrNull() ?: 8080
             val mavlinkHost = etMavlinkHost.text.toString().trim()
             val mavlinkPort = etMavlinkPort.text.toString().trim().toIntOrNull() ?: 5760
+            val rtspUrl = etRtspUrl.text.toString().trim()
             if (host.isEmpty()) {
                 Toast.makeText(this, "Host 不能为空", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -40,6 +43,9 @@ class SettingsActivity : AppCompatActivity() {
             AppPrefs.setHostPort(this, host, port)
             if (mavlinkHost.isNotEmpty()) {
                 AppPrefs.setMavlinkHostPort(this, mavlinkHost, mavlinkPort)
+            }
+            if (rtspUrl.isNotEmpty()) {
+                AppPrefs.setRtspUrl(this, rtspUrl)
             }
             Toast.makeText(this, "已保存：${AppPrefs.baseUrl(this)}", Toast.LENGTH_SHORT).show()
         }

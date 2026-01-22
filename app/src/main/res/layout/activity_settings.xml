@@ -98,6 +98,28 @@
             android:singleLine="true"/>
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="RTSP 地址"
+        android:textColor="#eaeaea"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="14dp"
+        android:paddingBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/etRtspUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="rtsp://192.168.144.108:554/stream=0"
+        android:textColor="#eaeaea"
+        android:textColorHint="#666666"
+        android:background="#171718"
+        android:padding="12dp"
+        android:inputType="textUri"
+        android:singleLine="true"/>
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
