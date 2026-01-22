@@ -6,24 +6,12 @@
     android:background="#0f0f10"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="连接模式"
-        android:textColor="#eaeaea"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:paddingBottom="10dp"/>
-
-    <Switch
-        android:id="@+id/swDirectMavlink"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="MAVLink"
-        android:textColor="#eaeaea"
-        android:padding="8dp"
-        android:minHeight="48dp"
-        android:layout_marginBottom="10dp"/>
+        android:text="返回"
+        android:layout_marginBottom="12dp"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -115,20 +103,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="保存"
-        android:layout_marginTop="12dp"/>
-
-    <Button
-        android:id="@+id/btnTest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="测试"
-        android:layout_marginTop="8dp"/>
-
-    <TextView
-        android:id="@+id/tvResult"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="结果：--"
-        android:textColor="#eaeaea"
         android:layout_marginTop="12dp"/>
 </LinearLayout>
