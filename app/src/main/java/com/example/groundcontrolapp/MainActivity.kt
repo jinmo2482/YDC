@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     // 日志（最多 50 行）
     private lateinit var tvLog: TextView
-    private lateinit var logScroll: ScrollView
+    private lateinit var mainScroll: ScrollView
     private val logs: ArrayDeque<String> = ArrayDeque()
 
     // 设置
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         explState = findViewById(R.id.explState)
         posText = findViewById(R.id.posText)
 
-        logScroll = findViewById(R.id.logScroll)
+        mainScroll = findViewById(R.id.mainScroll)
         tvLog = findViewById(R.id.tvLog)
 
         btnSettings = findViewById(R.id.btnSettings)
@@ -307,7 +307,7 @@ class MainActivity : AppCompatActivity() {
         while (logs.size > 50) logs.removeFirst()
 
         tvLog.text = logs.joinToString("\n")
-        logScroll.post { logScroll.fullScroll(View.FOCUS_DOWN) }
+        mainScroll.post { mainScroll.fullScroll(View.FOCUS_DOWN) }
     }
 
     // ====== Box：读取/保存 ======
