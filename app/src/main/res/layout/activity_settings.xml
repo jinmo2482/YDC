@@ -34,8 +34,50 @@
         android:textSize="16sp"
         android:paddingBottom="10dp"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etHost"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="IP，例如 192.168.144.11"
+            android:textColor="#eaeaea"
+            android:textColorHint="#666666"
+            android:background="#171718"
+            android:padding="12dp"
+            android:inputType="textNoSuggestions"
+            android:singleLine="true"/>
+
+        <EditText
+            android:id="@+id/etPort"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:hint="端口"
+            android:textColor="#eaeaea"
+            android:textColorHint="#666666"
+            android:background="#171718"
+            android:padding="12dp"
+            android:inputType="number"
+            android:singleLine="true"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MAVLink TCP"
+        android:textColor="#eaeaea"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="14dp"
+        android:paddingBottom="10dp"/>
+
     <EditText
-        android:id="@+id/etHost"
+        android:id="@+id/etMavlinkHost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="IP，例如 192.168.144.11"
@@ -47,10 +89,10 @@
         android:singleLine="true"/>
 
     <EditText
-        android:id="@+id/etPort"
+        android:id="@+id/etMavlinkPort"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="端口，例如 8000"
+        android:hint="端口，例如 5760"
         android:textColor="#eaeaea"
         android:textColorHint="#666666"
         android:background="#171718"
