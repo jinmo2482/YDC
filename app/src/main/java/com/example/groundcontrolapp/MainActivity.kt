@@ -48,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnStartNodes: Button
     private lateinit var btnStopNodes: Button
     private lateinit var btnStartMission: Button
+    private lateinit var btnNavStatus: Button
+    private lateinit var btnNavExplore: Button
+    private lateinit var btnNavVideo: Button
+    private lateinit var btnNavMap: Button
 
     // polling
     private val ui = Handler(Looper.getMainLooper())
@@ -159,6 +163,10 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes = findViewById(R.id.btnStartNodes)
         btnStopNodes = findViewById(R.id.btnStopNodes)
         btnStartMission = findViewById(R.id.btnStartMission)
+        btnNavStatus = findViewById(R.id.btnNavStatus)
+        btnNavExplore = findViewById(R.id.btnNavExplore)
+        btnNavVideo = findViewById(R.id.btnNavVideo)
+        btnNavMap = findViewById(R.id.btnNavMap)
     }
 
     private fun setupButtons() {
@@ -172,6 +180,19 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes.setOnClickListener { startNodes() }
         btnStopNodes.setOnClickListener { stopNodes() }
         btnStartMission.setOnClickListener { startMission() }
+
+        btnNavStatus.setOnClickListener {
+            mainScroll.smoothScrollTo(0, 0)
+        }
+        btnNavExplore.setOnClickListener {
+            startActivity(Intent(this, ExploreActivity::class.java))
+        }
+        btnNavVideo.setOnClickListener {
+            startActivity(Intent(this, VideoActivity::class.java))
+        }
+        btnNavMap.setOnClickListener {
+            startActivity(Intent(this, MapActivity::class.java))
+        }
     }
 
     private fun startPolling() {
@@ -476,6 +497,10 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes.isEnabled = enabled
         btnStopNodes.isEnabled = enabled
         btnStartMission.isEnabled = enabled
+        btnNavStatus.isEnabled = enabled
+        btnNavExplore.isEnabled = enabled
+        btnNavVideo.isEnabled = enabled
+        btnNavMap.isEnabled = enabled
     }
 
     private fun setBackendEnabled(enabled: Boolean) {
@@ -484,6 +509,10 @@ class MainActivity : AppCompatActivity() {
         btnStartNodes.isEnabled = enabled
         btnStopNodes.isEnabled = enabled
         btnStartMission.isEnabled = enabled
+        btnNavStatus.isEnabled = enabled
+        btnNavExplore.isEnabled = enabled
+        btnNavVideo.isEnabled = enabled
+        btnNavMap.isEnabled = enabled
         if (!enabled) {
             explState.text = "Direct MAVLink（backend disabled）"
         }
