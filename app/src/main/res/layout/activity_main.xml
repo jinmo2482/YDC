@@ -30,7 +30,7 @@
                     android:layout_centerHorizontal="true"
                     android:text="无人机自主探索系统"
                     android:textColor="#eaeaea"
-                    android:textSize="14sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <ImageButton
