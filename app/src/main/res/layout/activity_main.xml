@@ -14,32 +14,43 @@
         android:orientation="vertical">
 
         <!-- 顶部紧凑状态条 -->
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#121213"
-            android:padding="10dp"
-            android:orientation="horizontal">
+            android:padding="10dp">
 
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="矿洞探索"
+                android:text="无人机自主探索系统"
                 android:textColor="#eaeaea"
                 android:textStyle="bold"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:layout_centerHorizontal="true" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="设置 IP"
+                android:src="@android:drawable/ic_menu_manage"
+                android:tint="#eaeaea" />
 
             <TextView
                 android:id="@+id/tvBaseUrl"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="end"
+                android:layout_below="@id/tvTitle"
+                android:layout_alignParentEnd="true"
                 android:text="--"
                 android:textColor="#888888"
                 android:textSize="12sp" />
-        </LinearLayout>
+        </RelativeLayout>
 
         <!-- chips 行 -->
         <LinearLayout
@@ -171,29 +182,6 @@
                 android:textColor="#eaeaea"
                 android:textSize="12sp" />
         </ScrollView>
-
-        <!-- 底部：设置/测试 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-
-            <Button
-                android:id="@+id/btnSettings"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="设置 IP" />
-
-            <Button
-                android:id="@+id/btnHealth"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:text="测试连接" />
-        </LinearLayout>
 
     </LinearLayout>
 
