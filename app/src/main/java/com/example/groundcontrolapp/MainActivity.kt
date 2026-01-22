@@ -1,0 +1,442 @@
+package com.example.groundcontrolapp
+
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import kotlin.concurrent.thread
+import kotlin.math.roundToInt
+import android.view.View
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+
+class MainActivity : AppCompatActivity() {
+
+    // 顶部
+    private lateinit var tvBaseUrl: TextView
+    private lateinit var slMode: TextView
+    private lateinit var slArm: TextView
+    private lateinit var slBatt: TextView
+    private lateinit var connTxt: TextView
+
+    // 卡片
+    private lateinit var explState: TextView
+    private lateinit var posText: TextView
+
+    // 日志（最多三行）
+    private lateinit var tvLog: TextView
+    private val logs: ArrayDeque<String> = ArrayDeque()
+
+    // 设置/测试
+    private lateinit var btnSettings: Button
+    private lateinit var btnHealth: Button
+
+    // box 输入
+    private lateinit var boxMinX: EditText
+    private lateinit var boxMinY: EditText
+    private lateinit var boxMinZ: EditText
+    private lateinit var boxMaxX: EditText
+    private lateinit var boxMaxY: EditText
+    private lateinit var boxMaxZ: EditText
+    private lateinit var btnSaveBox: Button
+    private lateinit var btnLoadBox: Button
+
+    // 三按钮
+    private lateinit var btnStartNodes: Button
+    private lateinit var btnStopNodes: Button
+    private lateinit var btnStartMission: Button
+
+    // polling
+    private val ui = Handler(Looper.getMainLooper())
+    private var polling = false
+    private val pollIntervalMs = 900L
+
+    private val pollRunnable = object : Runnable {
+        override fun run() {
+            if (!polling) return
+            pollStatusOnce()
+            ui.postDelayed(this, pollIntervalMs)
+        }
+    }
+
+    // 防重入
+    @Volatile private var busy = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        enableImmersiveFullscreen()
+        bindViews()
+        setupButtons()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        enableImmersiveFullscreen()
+        tvBaseUrl.text = AppPrefs.baseUrl(this)
+        startPolling()
+        loadBox()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) enableImmersiveFullscreen()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopPolling()
+    }
+
+    private fun enableImmersiveFullscreen() {
+        // 让内容延伸到系统栏下面
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        // 旧设备兜底（Android 8/9 某些机器必须要）
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+
+    private fun bindViews() {
+        tvBaseUrl = findViewById(R.id.tvBaseUrl)
+        slMode = findViewById(R.id.slMode)
+        slArm = findViewById(R.id.slArm)
+        slBatt = findViewById(R.id.slBatt)
+        connTxt = findViewById(R.id.connTxt)
+
+        explState = findViewById(R.id.explState)
+        posText = findViewById(R.id.posText)
+
+        tvLog = findViewById(R.id.tvLog)
+
+        btnSettings = findViewById(R.id.btnSettings)
+        btnHealth = findViewById(R.id.btnHealth)
+
+        boxMinX = findViewById(R.id.box_min_x)
+        boxMinY = findViewById(R.id.box_min_y)
+        boxMinZ = findViewById(R.id.box_min_z)
+        boxMaxX = findViewById(R.id.box_max_x)
+        boxMaxY = findViewById(R.id.box_max_y)
+        boxMaxZ = findViewById(R.id.box_max_z)
+        btnSaveBox = findViewById(R.id.btnSaveBox)
+        btnLoadBox = findViewById(R.id.btnLoadBox)
+
+        btnStartNodes = findViewById(R.id.btnStartNodes)
+        btnStopNodes = findViewById(R.id.btnStopNodes)
+        btnStartMission = findViewById(R.id.btnStartMission)
+    }
+
+    private fun setupButtons() {
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        btnHealth.setOnClickListener {
+            val base = AppPrefs.baseUrl(this)
+            addLog("GET $base/api/health")
+            thread {
+                try {
+                    val json = ApiClient.get("$base/api/health")
+                    runOnUiThread {
+                        toast("✅ 连接成功")
+                        addLog("health: $json")
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        toast("❌ 连接失败")
+                        addLog("health err: ${e.message}")
+                    }
+                }
+            }
+        }
+
+        btnLoadBox.setOnClickListener { loadBox() }
+        btnSaveBox.setOnClickListener { saveBoxOnly() }
+
+        btnStartNodes.setOnClickListener { startNodes() }
+        btnStopNodes.setOnClickListener { stopNodes() }
+        btnStartMission.setOnClickListener { startMission() }
+    }
+
+    private fun startPolling() {
+        polling = true
+        ui.removeCallbacks(pollRunnable)
+        ui.post(pollRunnable)
+    }
+
+    private fun stopPolling() {
+        polling = false
+        ui.removeCallbacks(pollRunnable)
+    }
+
+    private fun pollStatusOnce() {
+        val base = AppPrefs.baseUrl(this)
+        thread {
+            try {
+                val json = ApiClient.get("$base/api/status")
+                val s = Json.gson.fromJson(json, StatusResp::class.java)
+
+                runOnUiThread {
+                    // 连接指示（对齐你网页 chooseConnText 思路）
+                    val (ct, color) = chooseConnChip(s)
+                    connTxt.text = ct
+                    connTxt.setTextColor(color)
+
+                    // Mode
+                    slMode.text = "M ${s.mode ?: "--"}"
+
+                    // Arm
+                    val armed = s.armed == true
+                    slArm.text = if (armed) "A ARM" else "A DIS"
+                    slArm.setTextColor(if (armed) 0xFF42D37C.toInt() else 0xFFFFD166.toInt())
+
+                    // Battery
+                    slBatt.text = "B " + formatBattery(s)
+
+                    // 卡片
+                    explState.text = s.exploration_state ?: "--"
+                    posText.text = formatPos(s)
+                }
+
+            } catch (e: Exception) {
+                runOnUiThread {
+                    connTxt.text = "!!"
+                    connTxt.setTextColor(0xFFFF5D5D.toInt())
+                    addLog("status err: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun chooseConnChip(s: StatusResp): Pair<String, Int> {
+        // 你的后端 /api/status 有 source_used: mavlink / none（网页里显示 ML/MR/--）——
+        // 这里我们简单映射：mavlink => ML 绿色；否则 -- 红色
+        val src = (s.source_used ?: "none").lowercase()
+        val ok = (src == "mavlink") && (s.mavlink_connected == true)
+        return if (ok) {
+            "ML" to 0xFF42D37C.toInt()
+        } else {
+            "--" to 0xFFFF5D5D.toInt()
+        }
+    }
+
+    private fun formatBattery(s: StatusResp): String {
+        val p = s.battery_percent
+        val v = s.battery_voltage
+        if (p != null && v != null) return "${p.roundToInt()}% ${"%.1f".format(v)}V"
+        if (p != null) return "${p.roundToInt()}%"
+        if (v != null) return "${"%.1f".format(v)}V"
+        return "--"
+    }
+
+    private fun formatPos(s: StatusResp): String {
+        // 你后端现在主要有 rel_alt_m（网页 status.html 也会用它兜底）
+        // 未来如果后端加 odom_xyz，我们也支持显示
+        val od = s.odom_xyz
+        if (od != null && od.size >= 3) {
+            return "x:${"%.2f".format(od[0])}  y:${"%.2f".format(od[1])}  z:${"%.2f".format(od[2])}"
+        }
+        val z = s.rel_alt_m
+        if (z != null) return "z:${"%.2f".format(z)}m"
+        return "--"
+    }
+
+    // ====== 日志：最多三行 ======
+    private fun addLog(line: String) {
+        val clean = line.trim()
+        if (clean.isEmpty()) return
+
+        logs.addLast(clean)
+        while (logs.size > 3) logs.removeFirst()
+
+        tvLog.text = logs.joinToString("\n")
+    }
+
+    private fun toast(t: String) {
+        Toast.makeText(this, t, Toast.LENGTH_SHORT).show()
+    }
+
+    // ====== Box：读取/保存 ======
+    private fun readBoxFromUI(): BoxReq {
+        fun parse(et: EditText, name: String): Double {
+            val v = et.text.toString().trim().toDoubleOrNull()
+            return v ?: throw IllegalArgumentException("参数 $name 不是数字")
+        }
+        val minx = parse(boxMinX, "min_x")
+        val miny = parse(boxMinY, "min_y")
+        val minz = parse(boxMinZ, "min_z")
+        val maxx = parse(boxMaxX, "max_x")
+        val maxy = parse(boxMaxY, "max_y")
+        val maxz = parse(boxMaxZ, "max_z")
+
+        if (!(minx < maxx && miny < maxy && minz < maxz)) {
+            throw IllegalArgumentException("范围非法：min 必须小于 max")
+        }
+
+        return BoxReq(minx, miny, minz, maxx, maxy, maxz)
+    }
+
+    private fun applyBoxToUI(b: BoxReq) {
+        boxMinX.setText(b.box_min_x.toString())
+        boxMinY.setText(b.box_min_y.toString())
+        boxMinZ.setText(b.box_min_z.toString())
+        boxMaxX.setText(b.box_max_x.toString())
+        boxMaxY.setText(b.box_max_y.toString())
+        boxMaxZ.setText(b.box_max_z.toString())
+    }
+
+    private fun loadBox() {
+        if (busy) {
+            addLog("忙：请稍等…")
+            return
+        }
+        busy = true
+        setButtonsEnabled(false)
+        val base = AppPrefs.baseUrl(this)
+        addLog("读取范围…")
+        thread {
+            try {
+                val json = ApiClient.get("$base/api/exploration/box")
+                val b = Json.gson.fromJson(json, BoxReq::class.java)
+                runOnUiThread {
+                    applyBoxToUI(b)
+                    addLog("范围已读取 ✅")
+                }
+            } catch (e: Exception) {
+                runOnUiThread { addLog("读取失败 ❌ ${e.message}") }
+            } finally {
+                runOnUiThread {
+                    busy = false
+                    setButtonsEnabled(true)
+                }
+            }
+        }
+    }
+
+    private fun saveBoxOnly() {
+        if (busy) {
+            addLog("忙：请稍等…")
+            return
+        }
+        busy = true
+        setButtonsEnabled(false)
+        val base = AppPrefs.baseUrl(this)
+        thread {
+            try {
+                val box = readBoxFromUI()
+                val body = Json.gson.toJson(box)
+                ApiClient.post("$base/api/exploration/box", body)
+                runOnUiThread { addLog("已保存 ✅") }
+            } catch (e: Exception) {
+                runOnUiThread { addLog("保存失败 ❌ ${e.message}") }
+            } finally {
+                runOnUiThread {
+                    busy = false
+                    setButtonsEnabled(true)
+                }
+            }
+        }
+    }
+
+    // ====== 三大按钮：启动/关闭/开始探索 ======
+    private fun startNodes() {
+        if (busy) return addLog("忙：请稍等…")
+        busy = true
+        setButtonsEnabled(false)
+        val base = AppPrefs.baseUrl(this)
+        addLog("启动中…")
+        thread {
+            try {
+                val resp = ApiClient.post("$base/api/exploration/start_nodes", "{}")
+                runOnUiThread {
+                    addLog("启动完成 ✅")
+                    // 可选：把后端返回日志简化展示
+                    if (resp.isNotBlank()) addLog("start_nodes: ok")
+                }
+            } catch (e: Exception) {
+                runOnUiThread { addLog("启动失败 ❌ ${e.message}") }
+            } finally {
+                runOnUiThread {
+                    busy = false
+                    setButtonsEnabled(true)
+                }
+            }
+        }
+    }
+
+    private fun stopNodes() {
+        if (busy) return addLog("忙：请稍等…")
+        busy = true
+        setButtonsEnabled(false)
+        val base = AppPrefs.baseUrl(this)
+        addLog("关闭中…")
+        thread {
+            try {
+                ApiClient.post("$base/api/exploration/stop_nodes", "{}")
+                runOnUiThread { addLog("已关闭 ✅") }
+            } catch (e: Exception) {
+                runOnUiThread { addLog("关闭失败 ❌ ${e.message}") }
+            } finally {
+                runOnUiThread {
+                    busy = false
+                    setButtonsEnabled(true)
+                }
+            }
+        }
+    }
+
+    private fun startMission() {
+        if (busy) return addLog("忙：请稍等…")
+        busy = true
+        setButtonsEnabled(false)
+        val base = AppPrefs.baseUrl(this)
+
+        thread {
+            try {
+                // 对齐网页：开始探索前先保存范围
+                runOnUiThread { addLog("保存范围…") }
+                val box = readBoxFromUI()
+                ApiClient.post("$base/api/exploration/box", Json.gson.toJson(box))
+                runOnUiThread { addLog("开始探索请求中…") }
+
+                // 调 /api/mission/start（你后端支持 prewarm/hold/rate/mode/arm 等参数）
+                val body = """{"hold_seconds":2.0,"setpoint_rate_hz":20.0,"mode":"OFFBOARD","arm":true}"""
+                ApiClient.post("$base/api/mission/start", body)
+
+                runOnUiThread { addLog("已请求 ✅") }
+            } catch (e: Exception) {
+                runOnUiThread { addLog("请求失败 ❌ ${e.message}") }
+            } finally {
+                runOnUiThread {
+                    busy = false
+                    setButtonsEnabled(true)
+                }
+            }
+        }
+    }
+
+    private fun setButtonsEnabled(enabled: Boolean) {
+        btnSettings.isEnabled = enabled
+        btnHealth.isEnabled = enabled
+        btnSaveBox.isEnabled = enabled
+        btnLoadBox.isEnabled = enabled
+        btnStartNodes.isEnabled = enabled
+        btnStopNodes.isEnabled = enabled
+        btnStartMission.isEnabled = enabled
+    }
+}
