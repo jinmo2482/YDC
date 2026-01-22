@@ -6,6 +6,9 @@ object AppPrefs {
     private const val PREF = "ground_prefs"
     private const val KEY_HOST = "host"
     private const val KEY_PORT = "port"
+    private const val KEY_DIRECT_MAVLINK = "direct_mavlink"
+    private const val KEY_MAVLINK_HOST = "mavlink_host"
+    private const val KEY_MAVLINK_PORT = "mavlink_port"
 
     fun getHost(ctx: Context): String =
         ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
@@ -20,6 +23,33 @@ object AppPrefs {
             .edit()
             .putString(KEY_HOST, host)
             .putInt(KEY_PORT, port)
+            .apply()
+    }
+
+    fun useDirectMavlink(ctx: Context): Boolean =
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DIRECT_MAVLINK, false)
+
+    fun setUseDirectMavlink(ctx: Context, enabled: Boolean) {
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_DIRECT_MAVLINK, enabled)
+            .apply()
+    }
+
+    fun getMavlinkHost(ctx: Context): String =
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .getString(KEY_MAVLINK_HOST, "192.168.144.11") ?: "192.168.144.11"
+
+    fun getMavlinkPort(ctx: Context): Int =
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .getInt(KEY_MAVLINK_PORT, 5760)
+
+    fun setMavlinkHostPort(ctx: Context, host: String, port: Int) {
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_MAVLINK_HOST, host)
+            .putInt(KEY_MAVLINK_PORT, port)
             .apply()
     }
 

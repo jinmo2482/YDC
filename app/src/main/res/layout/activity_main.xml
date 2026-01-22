@@ -153,18 +153,24 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- 日志：我们用代码控制只显示最后 3 行 -->
-        <TextView
-            android:id="@+id/tvLog"
+        <!-- 日志：滚动显示最新在底部 -->
+        <ScrollView
+            android:id="@+id/logScroll"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:layout_marginTop="10dp"
             android:background="#121213"
-            android:padding="12dp"
-            android:text="log..."
-            android:textColor="#eaeaea"
-            android:textSize="12sp" />
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tvLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="log..."
+                android:textColor="#eaeaea"
+                android:textSize="12sp" />
+        </ScrollView>
 
         <!-- 底部：设置/测试 -->
         <LinearLayout
