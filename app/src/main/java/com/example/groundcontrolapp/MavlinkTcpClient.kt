@@ -194,25 +194,144 @@ class MavlinkTcpClient(
     }
 
     private fun formatMode(heartbeat: Heartbeat): String {
+        val custom = heartbeat.customMode()
+        val autopilot = heartbeat.autopilot().value()
+        val type = heartbeat.type().value()
+        val customName = when (autopilot) {
+            12 -> px4ModeName(custom)
+            3 -> ardupilotModeName(custom, type)
+            else -> null
+        }
+        if (customName != null) {
+            return customName
+        }
+
         val parts = mutableListOf<String>()
 
         // ✅ 还是用 flagsEnabled(...) 来判断
         if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_AUTO_ENABLED)) {
             parts.add("AUTO")
-        } else if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED)) {
-            parts.add("MANUAL")
         }
 
         if (heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_GUIDED_ENABLED)) {
             parts.add("GUIDED")
         }
 
-        val custom = heartbeat.customMode()
+        if (parts.isEmpty() && heartbeat.baseMode().flagsEnabled(MavModeFlag.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED)) {
+            parts.add("MANUAL")
+        }
+
         return if (parts.isNotEmpty()) {
             parts.joinToString("/")
         } else {
             "CM:${custom.toInt()}"
         }
+    }
+
+    private fun px4ModeName(customMode: Long): String? {
+        val mainMode = (customMode shr 16).toInt() and 0xFF
+        val subMode = (customMode shr 24).toInt() and 0xFF
+        return when (mainMode) {
+            1 -> "MANUAL"
+            2 -> "ALTCTL"
+            3 -> "POSCTL"
+            4 -> when (subMode) {
+                1 -> "AUTO READY"
+                2 -> "AUTO TAKEOFF"
+                3 -> "AUTO LOITER"
+                4 -> "AUTO MISSION"
+                5 -> "AUTO RTL"
+                6 -> "AUTO LAND"
+                7 -> "AUTO RTGS"
+                8 -> "AUTO FOLLOW"
+                9 -> "AUTO PRECLAND"
+                else -> "AUTO"
+            }
+            5 -> "ACRO"
+            6 -> "OFFBOARD"
+            7 -> "STABILIZED"
+            8 -> "RATTITUDE"
+            else -> null
+        }
+    }
+
+    private fun ardupilotModeName(customMode: Long, vehicleType: Int): String? = when (vehicleType) {
+        2, 13, 14 -> arducopterModeName(customMode)
+        1, 16, 19, 20 -> arduplaneModeName(customMode)
+        10 -> arduroverModeName(customMode)
+        else -> null
+    }
+
+    private fun arducopterModeName(customMode: Long): String? = when (customMode.toInt()) {
+        0 -> "STABILIZE"
+        1 -> "ACRO"
+        2 -> "ALT_HOLD"
+        3 -> "AUTO"
+        4 -> "GUIDED"
+        5 -> "LOITER"
+        6 -> "RTL"
+        7 -> "CIRCLE"
+        8 -> "POSITION"
+        9 -> "LAND"
+        10 -> "OF_LOITER"
+        11 -> "DRIFT"
+        13 -> "SPORT"
+        14 -> "FLIP"
+        15 -> "AUTOTUNE"
+        16 -> "POSHOLD"
+        17 -> "BRAKE"
+        18 -> "THROW"
+        19 -> "AVOID_ADSB"
+        20 -> "GUIDED_NOGPS"
+        21 -> "SMART_RTL"
+        22 -> "FLOWHOLD"
+        23 -> "FOLLOW"
+        24 -> "ZIGZAG"
+        25 -> "SYSTEMID"
+        26 -> "AUTOROTATE"
+        else -> null
+    }
+
+    private fun arduplaneModeName(customMode: Long): String? = when (customMode.toInt()) {
+        0 -> "MANUAL"
+        1 -> "CIRCLE"
+        2 -> "STABILIZE"
+        3 -> "TRAINING"
+        4 -> "ACRO"
+        5 -> "FBWA"
+        6 -> "FBWB"
+        7 -> "CRUISE"
+        8 -> "AUTOTUNE"
+        10 -> "AUTO"
+        11 -> "RTL"
+        12 -> "LOITER"
+        13 -> "TAKEOFF"
+        14 -> "AVOID_ADSB"
+        15 -> "GUIDED"
+        16 -> "INITIALIZING"
+        17 -> "QSTABILIZE"
+        18 -> "QHOVER"
+        19 -> "QLOITER"
+        20 -> "QLAND"
+        21 -> "QRTL"
+        22 -> "QAUTOTUNE"
+        23 -> "QACRO"
+        24 -> "THERMAL"
+        25 -> "LOITER2"
+        26 -> "AUTOLAND"
+        else -> null
+    }
+
+    private fun arduroverModeName(customMode: Long): String? = when (customMode.toInt()) {
+        0 -> "MANUAL"
+        1 -> "ACRO"
+        2 -> "STEERING"
+        3 -> "HOLD"
+        4 -> "LOITER"
+        5 -> "FOLLOW"
+        6 -> "SIMPLE"
+        7 -> "DOCK"
+        else -> null
     }
 
     private fun severityPrefix(severity: Int): String = when (severity) {
