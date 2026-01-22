@@ -66,14 +66,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // MAVLink Direct
+    // MAVLink
     private var mavlinkClient: MavlinkTcpClient? = null
-    @Volatile private var directMode = false
     @Volatile private var lastMavlinkState = DroneState()
     private val mavlinkUiIntervalMs = 200L
     private val mavlinkUiRunnable = object : Runnable {
         override fun run() {
-            if (!directMode) return
+            if (mavlinkClient == null) return
             updateUiFromMavlink(lastMavlinkState)
             ui.postDelayed(this, mavlinkUiIntervalMs)
         }
@@ -94,15 +93,10 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableImmersiveFullscreen()
-        directMode = AppPrefs.useDirectMavlink(this)
-        if (directMode) {
-            startDirectMavlink()
-        } else {
-            setBackendEnabled(true)
-            tvBaseUrl.text = AppPrefs.baseUrl(this)
-            startPolling()
-            loadBox()
-        }
+        tvBaseUrl.text = AppPrefs.baseUrl(this)
+        startMavlinkClient()
+        startPolling()
+        loadBox()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -113,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopPolling()
-        stopDirectMavlink()
+        stopMavlinkClient()
     }
 
     private fun enableImmersiveFullscreen() {
@@ -206,14 +200,10 @@ class MainActivity : AppCompatActivity() {
         ui.removeCallbacks(pollRunnable)
     }
 
-    private fun startDirectMavlink() {
-        stopPolling()
-        setBackendEnabled(false)
-        explState.text = "Direct MAVLink"
+    private fun startMavlinkClient() {
         val host = AppPrefs.getMavlinkHost(this)
         val port = AppPrefs.getMavlinkPort(this)
-        tvBaseUrl.text = "tcp://$host:$port"
-        addLog("启用 Direct MAVLink：tcp://$host:$port")
+        addLog("MAVLink 连接：tcp://$host:$port")
         mavlinkClient?.stop()
         mavlinkClient = MavlinkTcpClient(
             host = host,
@@ -240,8 +230,7 @@ class MainActivity : AppCompatActivity() {
         ui.post(mavlinkUiRunnable)
     }
 
-    private fun stopDirectMavlink() {
-        directMode = false
+    private fun stopMavlinkClient() {
         ui.removeCallbacks(mavlinkUiRunnable)
         mavlinkClient?.stop()
         mavlinkClient = null
@@ -255,69 +244,17 @@ class MainActivity : AppCompatActivity() {
                 val s = Json.gson.fromJson(json, StatusResp::class.java)
 
                 runOnUiThread {
-                    // 连接指示（对齐你网页 chooseConnText 思路）
-                    val (ct, color) = chooseConnChip(s)
-                    connTxt.text = ct
-                    connTxt.setTextColor(color)
-
-                    // Mode
-                    slMode.text = "M ${s.mode ?: "--"}"
-
-                    // Arm
-                    val armed = s.armed == true
-                    slArm.text = if (armed) "A ARM" else "A DIS"
-                    slArm.setTextColor(if (armed) 0xFF42D37C.toInt() else 0xFFFFD166.toInt())
-
-                    // Battery
-                    slBatt.text = "B " + formatBattery(s)
-
-                    // 卡片
                     explState.text = s.exploration_state ?: "--"
-                    posText.text = formatPos(s)
                 }
 
             } catch (e: Exception) {
                 runOnUiThread {
-                    connTxt.text = "!!"
-                    connTxt.setTextColor(0xFFFF5D5D.toInt())
                     addLog("status err: ${e.message}")
                 }
             }
         }
     }
 
-    private fun chooseConnChip(s: StatusResp): Pair<String, Int> {
-        // 你的后端 /api/status 有 source_used: mavlink / none（网页里显示 ML/MR/--）——
-        // 这里我们简单映射：mavlink => ML 绿色；否则 -- 红色
-        val src = (s.source_used ?: "none").lowercase()
-        val ok = (src == "mavlink") && (s.mavlink_connected == true)
-        return if (ok) {
-            "ML" to 0xFF42D37C.toInt()
-        } else {
-            "--" to 0xFFFF5D5D.toInt()
-        }
-    }
-
-    private fun formatBattery(s: StatusResp): String {
-        val p = s.battery_percent
-        val v = s.battery_voltage
-        if (p != null && v != null) return "${p.roundToInt()}% ${"%.1f".format(v)}V"
-        if (p != null) return "${p.roundToInt()}%"
-        if (v != null) return "${"%.1f".format(v)}V"
-        return "--"
-    }
-
-    private fun formatPos(s: StatusResp): String {
-        // 你后端现在主要有 rel_alt_m（网页 status.html 也会用它兜底）
-        // 未来如果后端加 odom_xyz，我们也支持显示
-        val od = s.odom_xyz
-        if (od != null && od.size >= 3) {
-            return "x:${"%.2f".format(od[0])}  y:${"%.2f".format(od[1])}  z:${"%.2f".format(od[2])}"
-        }
-        val z = s.rel_alt_m
-        if (z != null) return "z:${"%.2f".format(z)}m"
-        return "--"
-    }
 
     // ====== 日志：最多 50 行 ======
     private fun addLog(line: String) {
@@ -501,21 +438,6 @@ class MainActivity : AppCompatActivity() {
         btnNavExplore.isEnabled = enabled
         btnNavVideo.isEnabled = enabled
         btnNavMap.isEnabled = enabled
-    }
-
-    private fun setBackendEnabled(enabled: Boolean) {
-        btnSaveBox.isEnabled = enabled
-        btnLoadBox.isEnabled = enabled
-        btnStartNodes.isEnabled = enabled
-        btnStopNodes.isEnabled = enabled
-        btnStartMission.isEnabled = enabled
-        btnNavStatus.isEnabled = enabled
-        btnNavExplore.isEnabled = enabled
-        btnNavVideo.isEnabled = enabled
-        btnNavMap.isEnabled = enabled
-        if (!enabled) {
-            explState.text = "Direct MAVLink（backend disabled）"
-        }
     }
 
     private fun updateUiFromMavlink(state: DroneState) {
