@@ -6,13 +6,6 @@
     android:background="#0f0f10"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="返回"
-        android:layout_marginBottom="12dp"/>
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -126,4 +119,12 @@
         android:layout_height="wrap_content"
         android:text="保存"
         android:layout_marginTop="12dp"/>
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="返回" />
+
 </LinearLayout>
