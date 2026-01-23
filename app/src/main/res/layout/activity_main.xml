@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#121213"
-                android:padding="10dp">
+                android:padding="1dp">
 
                 <TextView
                     android:id="@+id/tvTitle"
@@ -62,7 +62,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -113,13 +112,12 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="1dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_width="249dp"
+                    android:layout_height="169dp"
                     android:background="#171718"
                     android:orientation="vertical"
                     android:padding="10dp">
@@ -133,12 +131,29 @@
 
                     <TextView
                         android:id="@+id/explState"
-                        android:layout_width="match_parent"
+                        android:layout_width="233dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:text="--"
                         android:textColor="#eaeaea"
                         android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="位置"
+                        android:textColor="#aaaaaa"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/posText"
+                        android:layout_width="241dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="--"
+                        android:textColor="#eaeaea"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -152,162 +167,166 @@
                     android:padding="10dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="位置"
-                        android:textColor="#aaaaaa"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/posText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="--"
+                        android:text="探索范围"
                         android:textColor="#eaeaea"
                         android:textSize="14sp"
                         android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
 
-            <!-- 探索范围 panel -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="#171718"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="探索范围（开始探索会自动保存）"
-                    android:textColor="#eaeaea"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <!-- 6 输入 + 右侧按钮 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
+                    <!-- 6 输入 + 右侧按钮 -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-                            <EditText
-                                android:id="@+id/box_min_x"
-                                android:layout_width="0dp"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="min_x"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="-10.0"
-                                android:textColor="#eaeaea" />
+                                android:orientation="horizontal">
 
-                            <EditText
-                                android:id="@+id/box_min_y"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="min_y"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="-10.0"
-                                android:textColor="#eaeaea" />
+                                <EditText
+                                    android:id="@+id/box_min_x"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="min_x"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="-10.0"
+                                    android:textColor="#eaeaea" />
 
-                            <EditText
-                                android:id="@+id/box_min_z"
-                                android:layout_width="0dp"
+                                <EditText
+                                    android:id="@+id/box_min_y"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="min_y"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="-10.0"
+                                    android:textColor="#eaeaea" />
+
+                                <EditText
+                                    android:id="@+id/box_min_z"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="min_z"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="0.0"
+                                    android:textColor="#eaeaea" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="min_z"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="0.0"
-                                android:textColor="#eaeaea" />
+                                android:layout_marginTop="8dp"
+                                android:orientation="horizontal">
+
+                                <EditText
+                                    android:id="@+id/box_max_x"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="max_x"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="10.0"
+                                    android:textColor="#eaeaea" />
+
+                                <EditText
+                                    android:id="@+id/box_max_y"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="max_y"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="10.0"
+                                    android:textColor="#eaeaea" />
+
+                                <EditText
+                                    android:id="@+id/box_max_z"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_weight="1"
+                                    android:background="#0f0f10"
+                                    android:hint="max_z"
+                                    android:inputType="numberDecimal|numberSigned"
+                                    android:padding="10dp"
+                                    android:text="2.0"
+                                    android:textColor="#eaeaea" />
+                            </LinearLayout>
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="120dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:orientation="horizontal">
+                            android:layout_marginStart="10dp"
+                            android:orientation="vertical">
 
-                            <EditText
-                                android:id="@+id/box_max_x"
-                                android:layout_width="0dp"
+                            <Button
+                                android:id="@+id/btnSaveBox"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="max_x"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="10.0"
-                                android:textColor="#eaeaea" />
+                                android:text="保存" />
 
-                            <EditText
-                                android:id="@+id/box_max_y"
-                                android:layout_width="0dp"
+                            <Button
+                                android:id="@+id/btnLoadBox"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="max_y"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="10.0"
-                                android:textColor="#eaeaea" />
-
-                            <EditText
-                                android:id="@+id/box_max_z"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:layout_weight="1"
-                                android:background="#0f0f10"
-                                android:hint="max_z"
-                                android:inputType="numberDecimal|numberSigned"
-                                android:padding="10dp"
-                                android:text="2.0"
-                                android:textColor="#eaeaea" />
+                                android:layout_marginTop="8dp"
+                                android:text="读取" />
                         </LinearLayout>
+
                     </LinearLayout>
-
+                    <!-- 三按钮 -->
                     <LinearLayout
-                        android:layout_width="120dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:orientation="vertical">
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
 
                         <Button
-                            android:id="@+id/btnSaveBox"
-                            android:layout_width="match_parent"
+                            android:id="@+id/btnStartNodes"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="保存" />
+                            android:layout_weight="1"
+                            android:text="启动探索" />
 
                         <Button
-                            android:id="@+id/btnLoadBox"
-                            android:layout_width="match_parent"
+                            android:id="@+id/btnStopNodes"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="读取" />
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:text="关闭探索" />
+
+                        <Button
+                            android:id="@+id/btnStartMission"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:text="开始探索" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -316,7 +335,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:background="#121213"
                 android:orientation="vertical"
                 android:padding="12dp">
@@ -340,38 +358,6 @@
                     android:textColor="#eaeaea"
                     android:textSize="12sp" />
             </LinearLayout>
-
-            <!-- 三按钮 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnStartNodes"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="启动探索" />
-
-                <Button
-                    android:id="@+id/btnStopNodes"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:text="关闭探索" />
-
-                <Button
-                    android:id="@+id/btnStartMission"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:text="开始探索" />
-            </LinearLayout>
-
         </LinearLayout>
     </ScrollView>
 
