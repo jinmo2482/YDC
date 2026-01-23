@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNav"
-        android:padding="10dp">
+        android:padding="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#121213"
-                android:padding="1dp">
+                android:padding="2dp">
 
                 <TextView
                     android:id="@+id/tvTitle"
@@ -69,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="#171718"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:text="飞行模式 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
@@ -78,9 +78,9 @@
                     android:id="@+id/slArm"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:background="#171718"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:text="解锁状态 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
@@ -89,9 +89,9 @@
                     android:id="@+id/slBatt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:background="#171718"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:text="电池电量 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
@@ -100,9 +100,9 @@
                     android:id="@+id/connTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="6dp"
                     android:background="#171718"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:text="--"
                     android:textColor="#ffd166"
                     android:textStyle="bold" />
@@ -112,15 +112,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="4dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="249dp"
-                    android:layout_height="169dp"
+                    android:layout_width="220dp"
+                    android:layout_height="140dp"
                     android:background="#171718"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -131,12 +131,12 @@
 
                     <TextView
                         android:id="@+id/explState"
-                        android:layout_width="233dp"
+                        android:layout_width="200dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="4dp"
                         android:text="--"
                         android:textColor="#eaeaea"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -148,23 +148,23 @@
 
                     <TextView
                         android:id="@+id/posText"
-                        android:layout_width="241dp"
+                        android:layout_width="210dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="4dp"
                         android:text="--"
                         android:textColor="#eaeaea"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="6dp"
                     android:layout_weight="1"
                     android:background="#171718"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -178,7 +178,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="6dp"
                         android:orientation="horizontal">
 
                         <LinearLayout
@@ -200,7 +200,7 @@
                                     android:background="#0f0f10"
                                     android:hint="min_x"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="-10.0"
                                     android:textColor="#eaeaea" />
 
@@ -208,12 +208,12 @@
                                     android:id="@+id/box_min_y"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
+                                    android:layout_marginStart="6dp"
                                     android:layout_weight="1"
                                     android:background="#0f0f10"
                                     android:hint="min_y"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="-10.0"
                                     android:textColor="#eaeaea" />
 
@@ -221,12 +221,12 @@
                                     android:id="@+id/box_min_z"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
+                                    android:layout_marginStart="6dp"
                                     android:layout_weight="1"
                                     android:background="#0f0f10"
                                     android:hint="min_z"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="0.0"
                                     android:textColor="#eaeaea" />
                             </LinearLayout>
@@ -234,7 +234,7 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_marginTop="6dp"
                                 android:orientation="horizontal">
 
                                 <EditText
@@ -245,7 +245,7 @@
                                     android:background="#0f0f10"
                                     android:hint="max_x"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="10.0"
                                     android:textColor="#eaeaea" />
 
@@ -253,12 +253,12 @@
                                     android:id="@+id/box_max_y"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
+                                    android:layout_marginStart="6dp"
                                     android:layout_weight="1"
                                     android:background="#0f0f10"
                                     android:hint="max_y"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="10.0"
                                     android:textColor="#eaeaea" />
 
@@ -266,12 +266,12 @@
                                     android:id="@+id/box_max_z"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
+                                    android:layout_marginStart="6dp"
                                     android:layout_weight="1"
                                     android:background="#0f0f10"
                                     android:hint="max_z"
                                     android:inputType="numberDecimal|numberSigned"
-                                    android:padding="10dp"
+                                    android:padding="6dp"
                                     android:text="2.0"
                                     android:textColor="#eaeaea" />
                             </LinearLayout>
@@ -280,7 +280,7 @@
                         <LinearLayout
                             android:layout_width="120dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
+                            android:layout_marginStart="6dp"
                             android:orientation="vertical">
 
                             <Button
@@ -293,7 +293,7 @@
                                 android:id="@+id/btnLoadBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_marginTop="6dp"
                                 android:text="读取" />
                         </LinearLayout>
 
@@ -302,7 +302,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="6dp"
                         android:orientation="horizontal">
 
                         <Button
@@ -316,7 +316,7 @@
                             android:id="@+id/btnStopNodes"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
+                            android:layout_marginStart="6dp"
                             android:layout_weight="1"
                             android:text="关闭探索" />
 
@@ -324,7 +324,7 @@
                             android:id="@+id/btnStartMission"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
+                            android:layout_marginStart="6dp"
                             android:layout_weight="1"
                             android:text="开始探索" />
                     </LinearLayout>
@@ -337,7 +337,7 @@
                 android:layout_height="wrap_content"
                 android:background="#121213"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="8dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -350,10 +350,10 @@
                     android:id="@+id/tvLog"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="4dp"
                     android:clickable="true"
                     android:focusable="true"
-                    android:minHeight="120dp"
+                    android:minHeight="90dp"
                     android:text="log..."
                     android:textColor="#eaeaea"
                     android:textSize="12sp" />
@@ -393,7 +393,7 @@
         android:layout_alignParentBottom="true"
         android:background="#121213"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="6dp">
 
         <Button
             android:id="@+id/btnNavStatus"
@@ -406,7 +406,7 @@
             android:id="@+id/btnNavExplore"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="探索" />
 
@@ -414,7 +414,7 @@
             android:id="@+id/btnNavVideo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="视频" />
 
@@ -422,7 +422,7 @@
             android:id="@+id/btnNavMap"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="地图" />
     </LinearLayout>
