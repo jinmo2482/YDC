@@ -1,7 +1,6 @@
 package com.example.groundcontrolapp
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -9,12 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.ui.PlayerView
 
 class VideoActivity : AppCompatActivity() {
@@ -56,7 +52,6 @@ class VideoActivity : AppCompatActivity() {
 
     private fun bindViews() {
         playerView = findViewById(R.id.playerView)
-        playerView.setShutterBackgroundColor(Color.BLACK)
         btnNavStatus = findViewById(R.id.btnNavStatus)
         btnNavExplore = findViewById(R.id.btnNavExplore)
         btnNavVideo = findViewById(R.id.btnNavVideo)
@@ -90,9 +85,6 @@ class VideoActivity : AppCompatActivity() {
             .setUri(rtspUrl)
             .setLiveConfiguration(liveConfiguration)
             .build()
-        val mediaSource = RtspMediaSource.Factory()
-            .setForceUseRtpTcp(true)
-            .createMediaSource(mediaItem)
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
                 500,
@@ -104,17 +96,9 @@ class VideoActivity : AppCompatActivity() {
             .build()
         player = ExoPlayer.Builder(this)
             .setLoadControl(loadControl)
-            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build().also { exoPlayer ->
             playerView.player = exoPlayer
-            exoPlayer.setMediaSource(mediaSource)
-            exoPlayer.addListener(object : Player.Listener {
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    exoPlayer.setMediaSource(mediaSource, true)
-                    exoPlayer.prepare()
-                    exoPlayer.playWhenReady = true
-                }
-            })
+            exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
             exoPlayer.playWhenReady = true
         }
