@@ -5,6 +5,7 @@ import io.dronefleet.mavlink.common.Attitude
 import io.dronefleet.mavlink.common.BatteryStatus
 import io.dronefleet.mavlink.common.GlobalPositionInt
 import io.dronefleet.mavlink.common.GpsRawInt
+import io.dronefleet.mavlink.common.LocalPositionNed
 import io.dronefleet.mavlink.common.Statustext
 import io.dronefleet.mavlink.common.SysStatus
 import io.dronefleet.mavlink.minimal.Heartbeat
@@ -160,6 +161,16 @@ class MavlinkTcpClient(
                         vx = payload.vx() / 100.0,
                         vy = payload.vy() / 100.0,
                         vz = payload.vz() / 100.0,
+                    )
+                }
+            }
+
+            is LocalPositionNed -> {
+                updateState {
+                    it.copy(
+                        rosX = payload.x().toDouble(),
+                        rosY = payload.y().toDouble(),
+                        rosZ = payload.z().toDouble(),
                     )
                 }
             }
