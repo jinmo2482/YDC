@@ -4,11 +4,83 @@
     android:layout_height="match_parent"
     android:background="#0f0f10">
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/mapContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomNav" />
+        android:layout_above="@id/bottomNav"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvMapTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="地图管理"
+            android:textColor="#eaeaea"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvMapStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="等待刷新地图列表…"
+            android:textColor="#aaaaaa"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnMapRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="刷新地图列表" />
+
+        <ListView
+            android:id="@+id/mapList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:divider="#1f1f1f"
+            android:dividerHeight="1dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Voxel"
+                android:textColor="#eaeaea"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etVoxel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="#171718"
+                android:inputType="numberDecimal"
+                android:padding="6dp"
+                android:text="0.15"
+                android:textColor="#eaeaea"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnMapLoad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="加载地图" />
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- 底部导航（固定） -->
     <LinearLayout
