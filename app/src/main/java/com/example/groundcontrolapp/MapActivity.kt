@@ -49,6 +49,15 @@ class MapActivity : AppCompatActivity() {
         if (hasFocus) enableImmersiveFullscreen()
     }
 
+    override fun onDestroy() {
+        mapWebView.apply {
+            stopLoading()
+            webViewClient = null
+            destroy()
+        }
+        super.onDestroy()
+    }
+
     private fun bindViews() {
         btnNavStatus = findViewById(R.id.btnNavStatus)
         btnNavExplore = findViewById(R.id.btnNavExplore)
