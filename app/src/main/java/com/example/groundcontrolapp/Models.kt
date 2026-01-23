@@ -28,3 +28,12 @@ data class BoxReq(
     val box_max_y: Double,
     val box_max_z: Double
 )
+
+data class MapListResp(
+    val maps: List<String>? = null
+)
+
+data class LoadMapReq(
+    val filename: String,
+    val voxel: Double
+)
