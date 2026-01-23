@@ -8,7 +8,13 @@
         android:id="@+id/mapContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomNav" />
+        android:layout_above="@id/bottomNav">
+
+        <WebView
+            android:id="@+id/mapWebView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 
     <!-- 底部导航（固定） -->
     <LinearLayout

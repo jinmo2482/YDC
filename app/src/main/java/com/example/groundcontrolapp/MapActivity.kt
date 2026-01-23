@@ -4,6 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -15,6 +18,8 @@ class MapActivity : AppCompatActivity() {
     private lateinit var btnNavExplore: Button
     private lateinit var btnNavVideo: Button
     private lateinit var btnNavMap: Button
+    private lateinit var mapWebView: WebView
+    private var currentUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,11 +27,14 @@ class MapActivity : AppCompatActivity() {
         enableImmersiveFullscreen()
         bindViews()
         setupNav()
+        setupWebView()
+        loadMapPage()
     }
 
     override fun onResume() {
         super.onResume()
         enableImmersiveFullscreen()
+        loadMapPage()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -34,11 +42,21 @@ class MapActivity : AppCompatActivity() {
         if (hasFocus) enableImmersiveFullscreen()
     }
 
+    override fun onDestroy() {
+        mapWebView.apply {
+            stopLoading()
+            webViewClient = null
+            destroy()
+        }
+        super.onDestroy()
+    }
+
     private fun bindViews() {
         btnNavStatus = findViewById(R.id.btnNavStatus)
         btnNavExplore = findViewById(R.id.btnNavExplore)
         btnNavVideo = findViewById(R.id.btnNavVideo)
         btnNavMap = findViewById(R.id.btnNavMap)
+        mapWebView = findViewById(R.id.mapWebView)
     }
 
     private fun setupNav() {
@@ -53,6 +71,28 @@ class MapActivity : AppCompatActivity() {
         }
         btnNavMap.setOnClickListener {
             // 当前页面不跳转
+        }
+    }
+
+    private fun setupWebView() {
+        mapWebView.webViewClient = WebViewClient()
+        mapWebView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            cacheMode = WebSettings.LOAD_DEFAULT
+            useWideViewPort = true
+            loadWithOverviewMode = true
+            builtInZoomControls = true
+            displayZoomControls = false
+        }
+    }
+
+    private fun loadMapPage() {
+        val baseUrl = AppPrefs.baseUrl(this)
+        val url = "$baseUrl/map"
+        if (currentUrl != url) {
+            currentUrl = url
+            mapWebView.loadUrl(url)
         }
     }
 
