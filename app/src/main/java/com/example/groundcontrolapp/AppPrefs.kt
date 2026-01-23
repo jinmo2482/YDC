@@ -8,6 +8,8 @@ object AppPrefs {
     private const val KEY_PORT = "port"
     private const val KEY_MAVLINK_HOST = "mavlink_host"
     private const val KEY_MAVLINK_PORT = "mavlink_port"
+    private const val KEY_RTSP_URL = "rtsp_url"
+    private const val DEFAULT_RTSP_URL = "rtsp://192.168.144.108:554/stream=0"
 
     fun getHost(ctx: Context): String =
         ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
@@ -38,6 +40,17 @@ object AppPrefs {
             .edit()
             .putString(KEY_MAVLINK_HOST, host)
             .putInt(KEY_MAVLINK_PORT, port)
+            .apply()
+    }
+
+    fun getRtspUrl(ctx: Context): String =
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .getString(KEY_RTSP_URL, DEFAULT_RTSP_URL) ?: DEFAULT_RTSP_URL
+
+    fun setRtspUrl(ctx: Context, url: String) {
+        ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_RTSP_URL, url)
             .apply()
     }
 
