@@ -570,18 +570,10 @@ class MainActivity : AppCompatActivity() {
         }
         slBatt.text = "电池电量 $battText"
 
-        val lat = state.lat?.let { "%.6f".format(it) } ?: "--"
-        val lon = state.lon?.let { "%.6f".format(it) } ?: "--"
-        val alt = state.altM?.let { "%.1f".format(it) } ?: "--"
-        val relAlt = state.relAltM?.let { "%.1f".format(it) } ?: "--"
-        val fix = state.gpsFix?.toString() ?: "--"
-        val sats = state.satellites?.toString() ?: "--"
-        val att = if (state.roll != null && state.pitch != null && state.yaw != null) {
-            " r:${"%.0f".format(state.roll)} p:${"%.0f".format(state.pitch)} y:${"%.0f".format(state.yaw)}"
-        } else {
-            ""
-        }
-        posText.text =
-            "fix:$fix sat:$sats lat:$lat lon:$lon alt:$alt rel:$relAlt$att"
+        val rosX = state.rosX?.let { "%.2f".format(it) } ?: "--"
+        val rosY = state.rosY?.let { "%.2f".format(it) } ?: "--"
+        val rosZ = state.rosZ?.let { "%.2f".format(it) } ?: "--"
+        val yaw = state.yaw?.let { "%.1f".format(it) } ?: "--"
+        posText.text = "x:$rosX y:$rosY z:$rosZ yaw:$yaw"
     }
 }
