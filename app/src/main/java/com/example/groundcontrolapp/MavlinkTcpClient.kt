@@ -122,7 +122,7 @@ class MavlinkTcpClient(
             val offboardMode = 6L shl 16
             val setMode = SetMode.builder()
                 .targetSystem(targetSystem)
-                .baseMode(EnumValue.of(MavMode.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED))
+                .baseMode(EnumValue.of(MavModeFlag.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED))
                 .customMode(offboardMode)
                 .build()
             mavlink.send1(gcsSystem, gcsComponent, setMode)
