@@ -689,21 +689,18 @@ class MainActivity : AppCompatActivity() {
         if (busy) return addLog("忙：请稍等…")
         busy = true
         setButtonsEnabled(false)
-        val base = AppPrefs.baseUrl(this)
 
         thread {
             try {
-                // 对齐网页：开始探索前先保存范围
-                runOnUiThread { addLog("保存范围…") }
-                val box = readBoxFromUI()
-                ApiClient.post("$base/api/exploration/box", Json.gson.toJson(box))
-                runOnUiThread { addLog("开始探索请求中…") }
-
-                // 调 /api/mission/start（你后端支持 prewarm/hold/rate/mode/arm 等参数）
-                val body = """{"hold_seconds":2.0,"setpoint_rate_hz":20.0,"mode":"OFFBOARD","arm":true}"""
-                ApiClient.post("$base/api/mission/start", body)
-
-                runOnUiThread { addLog("已请求 ✅") }
+                runOnUiThread { addLog("MAVLink 解锁并切换 OFFBOARD…") }
+                val ok = mavlinkClient?.armAndSetOffboard() == true
+                runOnUiThread {
+                    if (ok) {
+                        addLog("已发送 ✅")
+                    } else {
+                        addLog("发送失败 ❌")
+                    }
+                }
             } catch (e: Exception) {
                 runOnUiThread { addLog("请求失败 ❌ ${e.message}") }
             } finally {
