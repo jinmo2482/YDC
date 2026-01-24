@@ -159,11 +159,19 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="系统状态"
+                        android:textColor="#aaaaaa"
+                        android:textSize="12sp" />
+
+                    <TextView
                         android:id="@+id/systemStatusText"
                         android:layout_width="210dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="系统状态：未就绪"
+                        android:layout_marginTop="4dp"
+                        android:text="--"
                         android:textColor="#ffd166"
                         android:textSize="13sp"
                         android:textStyle="bold" />

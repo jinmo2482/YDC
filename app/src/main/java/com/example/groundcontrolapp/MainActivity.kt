@@ -453,7 +453,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSystemStatus(ready: Boolean) {
-        val statusText = if (ready) "系统状态：已就绪" else "系统状态：未就绪"
+        val statusText = if (ready) "已就绪" else "未就绪"
         val color = if (ready) 0xFF42D37C.toInt() else 0xFFFFD166.toInt()
         systemStatusText.text = statusText
         systemStatusText.setTextColor(color)
