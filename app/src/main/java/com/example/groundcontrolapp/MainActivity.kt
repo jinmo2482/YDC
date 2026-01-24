@@ -504,7 +504,7 @@ class MainActivity : AppCompatActivity() {
             dialog.window?.let { window ->
                 window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
                 applyImmersiveToWindow(window)
-                val width = (resources.displayMetrics.widthPixels * 0.72f).roundToInt()
+                val width = (resources.displayMetrics.widthPixels * 0.6f).roundToInt()
                 window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT)
             }
         }
