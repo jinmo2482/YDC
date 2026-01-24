@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.*
 import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
@@ -500,9 +501,18 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("确定", null)
             .create()
         dialog.setOnShowListener {
-            dialog.window?.let { applyImmersiveToWindow(it) }
+            dialog.window?.let { window ->
+                window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+                applyImmersiveToWindow(window)
+                val width = (resources.displayMetrics.widthPixels * 0.72f).roundToInt()
+                window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT)
+            }
         }
         dialog.setOnDismissListener { enableImmersiveFullscreen() }
+        dialog.window?.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+        )
         dialog.show()
     }
 
