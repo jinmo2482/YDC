@@ -12,6 +12,7 @@ import io.dronefleet.mavlink.common.Statustext
 import io.dronefleet.mavlink.common.SysStatus
 import io.dronefleet.mavlink.common.MavCmd
 import io.dronefleet.mavlink.minimal.Heartbeat
+import io.dronefleet.mavlink.minimal.MavMode
 import io.dronefleet.mavlink.minimal.MavModeFlag
 import io.dronefleet.mavlink.util.EnumValue
 import java.net.InetSocketAddress
