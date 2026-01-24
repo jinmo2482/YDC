@@ -668,9 +668,9 @@ class MainActivity : AppCompatActivity() {
         val rosZ = state.rosZ?.let { "%.2f".format(it) } ?: "--"
         val yaw = state.yaw?.let { "%.1f".format(it) } ?: "--"
         posText.text = if (heartbeatOk) {
-            "位置 x:$rosX y:$rosY z:$rosZ yaw:$yaw"
+            "当前位置 x:$rosX y:$rosY z:$rosZ yaw:$yaw"
         } else {
-            "位置 --"
+            "当前位置 --"
         }
     }
 }

@@ -31,10 +31,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                    android:letterSpacing="0.1"
-                    android:text="无人机自主探索系统"
+                    android:letterSpacing="0.4"
+                    android:text="YID无人机自主探索系统"
                     android:textColor="#eaeaea"
-                    android:textSize="20sp"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
 
                 <ImageButton
@@ -70,6 +70,7 @@
                     android:id="@+id/slMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:background="#171718"
                     android:padding="6dp"
                     android:text="飞行模式 --"
@@ -106,7 +107,7 @@
                     android:layout_weight="1"
                     android:background="#171718"
                     android:padding="6dp"
-                    android:text="位置 --"
+                    android:text="当前位置 --"
                     android:textColor="#eaeaea"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -115,11 +116,11 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="5dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="220dp"
+                    android:layout_width="150dp"
                     android:layout_height="190dp"
                     android:background="#171718"
                     android:orientation="vertical"
@@ -127,42 +128,44 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:layout_marginTop="6dp"
                         android:text="系统状态"
                         android:textColor="#aaaaaa"
-                        android:textSize="12sp" />
+                        android:textSize="15sp" />
 
                     <TextView
                         android:id="@+id/systemStatusText"
-                        android:layout_width="210dp"
+                        android:layout_width="110dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="8dp"
+
+                        android:layout_marginTop="6dp"
                         android:text="--"
                         android:textColor="#ffd166"
-                        android:textSize="15sp"
+                        android:textSize="25sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="25dp"
                         android:text="探索状态"
                         android:textColor="#aaaaaa"
-                        android:textSize="12sp" />
+                        android:textSize="15sp" />
 
                     <TextView
                         android:id="@+id/explState"
-                        android:layout_width="210dp"
+                        android:layout_width="110dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="6dp"
                         android:text="--"
                         android:textColor="#eaeaea"
-                        android:textSize="15sp"
+                        android:textSize="25sp"
                         android:textStyle="bold" />
 
-                    <View
-                        android:layout_width="wrap_content"
-                        android:layout_height="8dp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -287,7 +290,7 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="100dp"
+                            android:layout_width="150dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:orientation="vertical">
@@ -296,12 +299,14 @@
                                 android:id="@+id/btnSaveBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
                                 android:text="保存" />
 
                             <Button
                                 android:id="@+id/btnLoadBox"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
                                 android:layout_marginTop="6dp"
                                 android:text="读取" />
                         </LinearLayout>
@@ -333,6 +338,7 @@
                             android:id="@+id/btnStartMission"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
                             android:text="开始探索" />
@@ -344,6 +350,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:background="#121213"
                 android:orientation="vertical"
                 android:padding="8dp">
@@ -351,6 +358,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:text="日志"
                     android:textColor="#aaaaaa"
                     android:textSize="12sp" />
@@ -359,6 +367,7 @@
                     android:id="@+id/tvLog"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:layout_marginTop="4dp"
                     android:clickable="true"
                     android:focusable="true"
