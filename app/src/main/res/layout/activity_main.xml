@@ -99,14 +99,15 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/connTxt"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/posText"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
+                    android:layout_weight="1"
                     android:background="#171718"
                     android:padding="6dp"
-                    android:text="--"
-                    android:textColor="#ffd166"
+                    android:text="位置 --"
+                    android:textColor="#eaeaea"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -159,23 +160,9 @@
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
-                    <TextView
+                    <View
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="位置"
-                        android:textColor="#aaaaaa"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/posText"
-                        android:layout_width="210dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="--"
-                        android:textColor="#eaeaea"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
+                        android:layout_height="8dp" />
                 </LinearLayout>
 
                 <LinearLayout

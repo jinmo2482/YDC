@@ -28,11 +28,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var slMode: TextView
     private lateinit var slArm: TextView
     private lateinit var slBatt: TextView
-    private lateinit var connTxt: TextView
+    private lateinit var posText: TextView
 
     // 卡片
     private lateinit var explState: TextView
-    private lateinit var posText: TextView
     private lateinit var systemStatusText: TextView
 
     // 日志（主界面显示最多 5 行）
@@ -169,10 +168,9 @@ class MainActivity : AppCompatActivity() {
         slMode = findViewById(R.id.slMode)
         slArm = findViewById(R.id.slArm)
         slBatt = findViewById(R.id.slBatt)
-        connTxt = findViewById(R.id.connTxt)
+        posText = findViewById(R.id.posText)
 
         explState = findViewById(R.id.explState)
-        posText = findViewById(R.id.posText)
         systemStatusText = findViewById(R.id.systemStatusText)
 
         mainScroll = findViewById(R.id.mainScroll)
@@ -413,10 +411,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onConnectionState(connected: Boolean) {
-                    runOnUiThread {
-                        val color = if (connected) 0xFF42D37C.toInt() else 0xFFFF5D5D.toInt()
-                        connTxt.text = if (connected) "ML" else "--"
-                        connTxt.setTextColor(color)
+                    if (!connected) {
+                        runOnUiThread { addLog("MAVLink 连接断开") }
                     }
                 }
             },
@@ -645,8 +641,6 @@ class MainActivity : AppCompatActivity() {
     private fun updateUiFromMavlink(state: DroneState) {
         val now = System.currentTimeMillis()
         val heartbeatOk = state.lastHeartbeatMs > 0 && now - state.lastHeartbeatMs < 2000L
-        connTxt.text = if (heartbeatOk) "ML" else "--"
-        connTxt.setTextColor(if (heartbeatOk) 0xFF42D37C.toInt() else 0xFFFF5D5D.toInt())
 
         slMode.text = "飞行模式 ${state.mode ?: "--"}"
         val armed = state.armed == true
@@ -673,6 +667,10 @@ class MainActivity : AppCompatActivity() {
         val rosY = state.rosY?.let { "%.2f".format(it) } ?: "--"
         val rosZ = state.rosZ?.let { "%.2f".format(it) } ?: "--"
         val yaw = state.yaw?.let { "%.1f".format(it) } ?: "--"
-        posText.text = "x:$rosX y:$rosY z:$rosZ yaw:$yaw"
+        posText.text = if (heartbeatOk) {
+            "位置 x:$rosX y:$rosY z:$rosZ yaw:$yaw"
+        } else {
+            "位置 --"
+        }
     }
 }
