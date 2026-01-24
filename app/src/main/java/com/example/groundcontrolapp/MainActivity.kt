@@ -219,7 +219,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         btnSettings.setOnClickListener {
-            if (!ensureSystemReady()) return@setOnClickListener
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
@@ -522,9 +521,20 @@ class MainActivity : AppCompatActivity() {
         val clean = line.trim()
         if (clean.isEmpty()) return
 
+        val shouldAutoScroll = shouldAutoScrollToBottom()
         LogStore.add(clean)
         tvLog.text = LogStore.latest(5).joinToString("\n")
-        mainScroll.post { mainScroll.fullScroll(View.FOCUS_DOWN) }
+        if (shouldAutoScroll) {
+            mainScroll.post { mainScroll.fullScroll(View.FOCUS_DOWN) }
+        }
+    }
+
+    private fun shouldAutoScrollToBottom(): Boolean {
+        if (currentSection != NavSection.STATUS) return false
+        val child = mainScroll.getChildAt(0) ?: return false
+        val distanceToBottom = child.bottom - (mainScroll.height + mainScroll.scrollY)
+        val threshold = (mainScroll.resources.displayMetrics.density * 24).roundToInt()
+        return distanceToBottom <= threshold
     }
 
     // ====== Box：读取/保存 ======
