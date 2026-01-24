@@ -7,11 +7,14 @@ import io.dronefleet.mavlink.common.CommandLong
 import io.dronefleet.mavlink.common.GlobalPositionInt
 import io.dronefleet.mavlink.common.GpsRawInt
 import io.dronefleet.mavlink.common.LocalPositionNed
+import io.dronefleet.mavlink.common.SetMode
 import io.dronefleet.mavlink.common.Statustext
 import io.dronefleet.mavlink.common.SysStatus
 import io.dronefleet.mavlink.common.MavCmd
 import io.dronefleet.mavlink.minimal.Heartbeat
+import io.dronefleet.mavlink.minimal.MavMode
 import io.dronefleet.mavlink.minimal.MavModeFlag
+import io.dronefleet.mavlink.util.EnumValue
 import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.concurrent.thread
@@ -116,20 +119,13 @@ class MavlinkTcpClient(
                 .build()
             mavlink.send1(gcsSystem, gcsComponent, armCommand)
 
-            val offboardMode = (6 shl 16).toFloat()
-            val setModeCommand = CommandLong.builder()
+            val offboardMode = 6L shl 16
+            val setMode = SetMode.builder()
                 .targetSystem(targetSystem)
-                .targetComponent(targetComponent)
-                .command(MavCmd.MAV_CMD_DO_SET_MODE)
-                .param1(1f)
-                .param2(offboardMode)
-                .param3(0f)
-                .param4(0f)
-                .param5(0f)
-                .param6(0f)
-                .param7(0f)
+                .baseMode(EnumValue.of(MavMode.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED))
+                .customMode(offboardMode)
                 .build()
-            mavlink.send1(gcsSystem, gcsComponent, setModeCommand)
+            mavlink.send1(gcsSystem, gcsComponent, setMode)
             callbacks.onLogLine("MAVLink: 已发送解锁 + OFFBOARD 指令")
             true
         } catch (e: Exception) {
