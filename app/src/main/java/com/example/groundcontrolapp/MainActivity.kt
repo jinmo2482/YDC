@@ -267,18 +267,18 @@ class MainActivity : AppCompatActivity() {
             .setLoadControl(loadControl)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build().also { exoPlayer ->
-            playerView.player = exoPlayer
-            exoPlayer.setMediaSource(mediaSource)
-            exoPlayer.addListener(object : Player.Listener {
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    exoPlayer.setMediaSource(mediaSource, true)
-                    exoPlayer.prepare()
-                    exoPlayer.playWhenReady = true
-                }
-            })
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-        }
+                playerView.player = exoPlayer
+                exoPlayer.setMediaSource(mediaSource)
+                exoPlayer.addListener(object : Player.Listener {
+                    override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                        exoPlayer.setMediaSource(mediaSource, true)
+                        exoPlayer.prepare()
+                        exoPlayer.playWhenReady = true
+                    }
+                })
+                exoPlayer.prepare()
+                exoPlayer.playWhenReady = true
+            }
     }
 
     private fun releasePlayer() {

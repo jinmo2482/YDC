@@ -49,15 +49,6 @@ class MapActivity : AppCompatActivity() {
         if (hasFocus) enableImmersiveFullscreen()
     }
 
-    override fun onDestroy() {
-        mapWebView.apply {
-            stopLoading()
-            webViewClient = null
-            destroy()
-        }
-        super.onDestroy()
-    }
-
     private fun bindViews() {
         btnNavStatus = findViewById(R.id.btnNavStatus)
         btnNavExplore = findViewById(R.id.btnNavExplore)
@@ -168,10 +159,10 @@ class MapActivity : AppCompatActivity() {
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                View.SYSTEM_UI_FLAG_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
 }
