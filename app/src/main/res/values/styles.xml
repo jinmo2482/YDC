@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="ThemeOverlay.GroundControlApp.StatusDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="materialAlertDialogBackground">@drawable/bg_status_dialog</item>
+        <!-- 用 android:background 覆盖背景（最不挑版本，最稳） -->
+        <item name="android:background">@drawable/bg_status_dialog</item>
+
         <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.GroundControlApp.Dialog.Body</item>
         <item name="buttonBarPositiveButtonStyle">@style/Widget.GroundControlApp.DialogButton</item>
     </style>
