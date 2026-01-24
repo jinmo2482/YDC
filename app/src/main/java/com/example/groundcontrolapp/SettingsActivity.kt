@@ -1,6 +1,7 @@
 package com.example.groundcontrolapp
 
 import android.os.Bundle
+import android.os.Build
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -62,12 +63,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun enableImmersiveFullscreen() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
-        controller.hide(WindowInsetsCompat.Type.systemBars())
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            val controller = WindowInsetsControllerCompat(window, window.decorView)
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
 
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility =
