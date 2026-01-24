@@ -1,5 +1,6 @@
 package com.example.groundcontrolapp
 
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -490,10 +491,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showStatusDialog(message: String) {
-        AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("确定", null)
-            .show()
+        val dialog = Dialog(this, R.style.Theme_GroundControlApp_FullscreenDialog)
+        dialog.setContentView(R.layout.dialog_status_fullscreen)
+        dialog.setCancelable(true)
+        val messageView = dialog.findViewById<TextView>(R.id.statusDialogMessage)
+        val okButton = dialog.findViewById<Button>(R.id.statusDialogOk)
+        messageView.text = message
+        okButton.setOnClickListener { dialog.dismiss() }
+        dialog.show()
     }
 
 

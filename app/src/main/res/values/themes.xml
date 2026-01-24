@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.GroundControlApp" parent="Base.Theme.GroundControlApp" />
+
+    <style name="Theme.GroundControlApp.FullscreenDialog" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">#0f0f10</item>
+    </style>
 </resources>
