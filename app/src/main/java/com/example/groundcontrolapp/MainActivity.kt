@@ -1,5 +1,6 @@
 package com.example.groundcontrolapp
 
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -100,6 +101,7 @@ class MainActivity : AppCompatActivity() {
 
     // 防重入
     @Volatile private var busy = false
+    private var systemReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -211,15 +213,32 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtons() {
         btnSettings.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        btnLoadBox.setOnClickListener { loadBox() }
-        btnSaveBox.setOnClickListener { saveBoxOnly() }
+        btnLoadBox.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
+            loadBox()
+        }
+        btnSaveBox.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
+            saveBoxOnly()
+        }
 
-        btnStartNodes.setOnClickListener { startNodes() }
-        btnStopNodes.setOnClickListener { stopNodes() }
-        btnStartMission.setOnClickListener { startMission() }
+        btnStartNodes.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
+            startNodes()
+        }
+        btnStopNodes.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
+            stopNodes()
+        }
+        btnStartMission.setOnClickListener {
+            if (!ensureSystemReady()) return@setOnClickListener
+            if (!ensureExplorationStarted()) return@setOnClickListener
+            startMission()
+        }
 
         btnNavStatus.setOnClickListener {
             showSection(NavSection.STATUS)
@@ -449,10 +468,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateSystemStatus(ready: Boolean) {
+        systemReady = ready
         val statusText = if (ready) "已就绪" else "未就绪"
         val color = if (ready) 0xFF42D37C.toInt() else 0xFFFFD166.toInt()
         systemStatusText.text = statusText
         systemStatusText.setTextColor(color)
+    }
+
+    private fun ensureSystemReady(): Boolean {
+        if (systemReady) return true
+        showStatusDialog("系统未就绪，请检查无人机系统状态！")
+        return false
+    }
+
+    private fun ensureExplorationStarted(): Boolean {
+        if (explState.text.toString().trim() == "已启动") {
+            return true
+        }
+        showStatusDialog("请先启动探索程序！")
+        return false
+    }
+
+    private fun showStatusDialog(message: String) {
+        val dialog = Dialog(this, R.style.Theme_GroundControlApp_FullscreenDialog)
+        dialog.setContentView(R.layout.dialog_status_fullscreen)
+        dialog.setCancelable(true)
+        val messageView = dialog.findViewById<TextView>(R.id.statusDialogMessage)
+        val okButton = dialog.findViewById<Button>(R.id.statusDialogOk)
+        messageView.text = message
+        okButton.setOnClickListener { dialog.dismiss() }
+        dialog.show()
     }
 
 
