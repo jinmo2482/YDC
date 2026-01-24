@@ -40,6 +40,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var exploreContent: FrameLayout
     private lateinit var mapContent: FrameLayout
     private lateinit var playerView: PlayerView
+    private lateinit var btnMapRefresh: Button
+    private lateinit var btnMapLoad: Button
+    private lateinit var mapList: ListView
+    private lateinit var mapStatus: TextView
+    private lateinit var voxelInput: EditText
+    private var mapAdapter: MapListAdapter? = null
+    private var selectedMap: String? = null
 
     // 设置
     private lateinit var btnSettings: ImageButton
@@ -172,6 +179,11 @@ class MainActivity : AppCompatActivity() {
         mapContent = findViewById(R.id.mapContent)
         playerView = findViewById(R.id.playerView)
         playerView.setShutterBackgroundColor(Color.BLACK)
+        btnMapRefresh = findViewById(R.id.btnMapRefresh)
+        btnMapLoad = findViewById(R.id.btnMapLoad)
+        mapList = findViewById(R.id.mapList)
+        mapStatus = findViewById(R.id.tvMapStatus)
+        voxelInput = findViewById(R.id.etVoxel)
 
         btnSettings = findViewById(R.id.btnSettings)
 
@@ -222,6 +234,7 @@ class MainActivity : AppCompatActivity() {
         btnNavMap.setOnClickListener {
             showSection(NavSection.MAP)
         }
+        setupMapUi()
     }
 
     private fun showSection(section: NavSection) {
@@ -236,6 +249,81 @@ class MainActivity : AppCompatActivity() {
         playerView.visibility = if (section == NavSection.VIDEO) View.VISIBLE else View.GONE
         if (section == NavSection.VIDEO) {
             initializePlayer()
+        }
+        if (section == NavSection.MAP) {
+            loadMaps()
+        }
+    }
+
+    private fun setupMapUi() {
+        mapAdapter = MapListAdapter(this, mutableListOf())
+        mapList.adapter = mapAdapter
+        mapList.setOnItemClickListener { _, _, position, _ ->
+            selectedMap = mapAdapter?.getItem(position)
+            val name = selectedMap ?: "未选择"
+            mapStatus.text = "已选择地图：$name"
+        }
+        btnMapRefresh.setOnClickListener { loadMaps() }
+        btnMapLoad.setOnClickListener { loadSelectedMap() }
+    }
+
+    private fun loadMaps() {
+        val baseUrl = AppPrefs.baseUrl(this)
+        mapStatus.text = "正在拉取地图列表…"
+        btnMapRefresh.isEnabled = false
+        thread {
+            try {
+                val json = ApiClient.get("$baseUrl/api/maps")
+                val resp = Json.gson.fromJson(json, MapListResp::class.java)
+                val maps = resp.maps ?: emptyList()
+                runOnUiThread {
+                    mapAdapter?.setItems(maps)
+                    selectedMap = maps.firstOrNull()
+                    val status = if (maps.isEmpty()) {
+                        "未发现地图文件"
+                    } else {
+                        "已加载 ${maps.size} 个地图"
+                    }
+                    mapStatus.text = status
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    mapStatus.text = "拉取失败：${e.message}"
+                }
+            } finally {
+                runOnUiThread {
+                    btnMapRefresh.isEnabled = true
+                }
+            }
+        }
+    }
+
+    private fun loadSelectedMap() {
+        val mapName = selectedMap
+        if (mapName.isNullOrBlank()) {
+            Toast.makeText(this, "请先选择地图", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val voxel = voxelInput.text.toString().toDoubleOrNull() ?: 0.15
+        val baseUrl = AppPrefs.baseUrl(this)
+        mapStatus.text = "加载地图中：$mapName"
+        btnMapLoad.isEnabled = false
+        thread {
+            try {
+                val body = Json.gson.toJson(LoadMapReq(mapName, voxel))
+                ApiClient.post("$baseUrl/api/maps/load", body)
+                runOnUiThread {
+                    mapStatus.text = "已请求加载地图：$mapName (voxel=$voxel)"
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    mapStatus.text = "加载失败：${e.message}"
+                }
+            } finally {
+                runOnUiThread {
+                    btnMapLoad.isEnabled = true
+                }
+            }
         }
     }
 
