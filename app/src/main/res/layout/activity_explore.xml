@@ -16,12 +16,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#121213"
+        android:background="@drawable/bg_bottom_nav"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="8dp">
 
         <Button
             android:id="@+id/btnNavStatus"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -29,25 +30,28 @@
 
         <Button
             android:id="@+id/btnNavExplore"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="探索" />
 
         <Button
             android:id="@+id/btnNavVideo"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="视频" />
 
         <Button
             android:id="@+id/btnNavMap"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:text="地图" />
     </LinearLayout>

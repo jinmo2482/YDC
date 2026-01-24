@@ -34,6 +34,7 @@ class MapActivity : AppCompatActivity() {
         enableImmersiveFullscreen()
         bindViews()
         setupNav()
+        updateNavSelection()
         setupMapUi()
         loadMaps()
     }
@@ -74,6 +75,13 @@ class MapActivity : AppCompatActivity() {
         btnNavMap.setOnClickListener {
             // 当前页面不跳转
         }
+    }
+
+    private fun updateNavSelection() {
+        btnNavStatus.isSelected = false
+        btnNavExplore.isSelected = false
+        btnNavVideo.isSelected = false
+        btnNavMap.isSelected = true
     }
 
     private fun setupMapUi() {
