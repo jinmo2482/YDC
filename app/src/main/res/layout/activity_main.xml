@@ -486,12 +486,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#121213"
+        android:background="@drawable/bg_bottom_nav"
         android:orientation="horizontal"
-        android:padding="6dp">
+        android:padding="8dp">
 
         <Button
             android:id="@+id/btnNavStatus"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -499,6 +500,7 @@
 
         <Button
             android:id="@+id/btnNavExplore"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
@@ -507,6 +509,7 @@
 
         <Button
             android:id="@+id/btnNavVideo"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
@@ -515,6 +518,7 @@
 
         <Button
             android:id="@+id/btnNavMap"
+            style="@style/Widget.GroundControlApp.BottomNavButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"

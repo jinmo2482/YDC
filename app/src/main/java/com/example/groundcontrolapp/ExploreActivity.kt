@@ -22,6 +22,7 @@ class ExploreActivity : AppCompatActivity() {
         enableImmersiveFullscreen()
         bindViews()
         setupNav()
+        updateNavSelection()
     }
 
     override fun onResume() {
@@ -54,6 +55,13 @@ class ExploreActivity : AppCompatActivity() {
         btnNavMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
         }
+    }
+
+    private fun updateNavSelection() {
+        btnNavStatus.isSelected = false
+        btnNavExplore.isSelected = true
+        btnNavVideo.isSelected = false
+        btnNavMap.isSelected = false
     }
 
     private fun enableImmersiveFullscreen() {

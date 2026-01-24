@@ -259,6 +259,7 @@ class MainActivity : AppCompatActivity() {
             showSection(NavSection.MAP)
         }
         setupMapUi()
+        updateNavSelection(currentSection)
     }
 
     private fun showSection(section: NavSection) {
@@ -271,12 +272,20 @@ class MainActivity : AppCompatActivity() {
         exploreContent.visibility = if (section == NavSection.EXPLORE) View.VISIBLE else View.GONE
         mapContent.visibility = if (section == NavSection.MAP) View.VISIBLE else View.GONE
         playerView.visibility = if (section == NavSection.VIDEO) View.VISIBLE else View.GONE
+        updateNavSelection(section)
         if (section == NavSection.VIDEO) {
             initializePlayer()
         }
         if (section == NavSection.MAP) {
             loadMaps()
         }
+    }
+
+    private fun updateNavSelection(section: NavSection) {
+        btnNavStatus.isSelected = section == NavSection.STATUS
+        btnNavExplore.isSelected = section == NavSection.EXPLORE
+        btnNavVideo.isSelected = section == NavSection.VIDEO
+        btnNavMap.isSelected = section == NavSection.MAP
     }
 
     private fun setupMapUi() {

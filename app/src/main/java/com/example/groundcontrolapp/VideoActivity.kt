@@ -32,6 +32,7 @@ class VideoActivity : AppCompatActivity() {
         enableImmersiveFullscreen()
         bindViews()
         setupNav()
+        updateNavSelection()
     }
 
     override fun onStart() {
@@ -76,6 +77,13 @@ class VideoActivity : AppCompatActivity() {
         btnNavMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
         }
+    }
+
+    private fun updateNavSelection() {
+        btnNavStatus.isSelected = false
+        btnNavExplore.isSelected = false
+        btnNavVideo.isSelected = true
+        btnNavMap.isSelected = false
     }
 
     private fun initializePlayer() {
