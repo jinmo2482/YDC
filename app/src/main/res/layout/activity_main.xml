@@ -157,6 +157,16 @@
                         android:textColor="#eaeaea"
                         android:textSize="13sp"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/systemStatusText"
+                        android:layout_width="210dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="系统状态：未就绪"
+                        android:textColor="#ffd166"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout

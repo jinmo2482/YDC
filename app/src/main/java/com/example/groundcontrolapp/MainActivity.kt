@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     // 卡片
     private lateinit var explState: TextView
     private lateinit var posText: TextView
+    private lateinit var systemStatusText: TextView
 
     // 日志（主界面显示最多 5 行）
     private lateinit var tvLog: TextView
@@ -172,6 +173,7 @@ class MainActivity : AppCompatActivity() {
 
         explState = findViewById(R.id.explState)
         posText = findViewById(R.id.posText)
+        systemStatusText = findViewById(R.id.systemStatusText)
 
         mainScroll = findViewById(R.id.mainScroll)
         tvLog = findViewById(R.id.tvLog)
@@ -438,14 +440,23 @@ class MainActivity : AppCompatActivity() {
 
                 runOnUiThread {
                     explState.text = s.exploration_state ?: "--"
+                    updateSystemStatus(true)
                 }
 
             } catch (e: Exception) {
                 runOnUiThread {
+                    updateSystemStatus(false)
                     addLog("status err: ${e.message}")
                 }
             }
         }
+    }
+
+    private fun updateSystemStatus(ready: Boolean) {
+        val statusText = if (ready) "系统状态：已就绪" else "系统状态：未就绪"
+        val color = if (ready) 0xFF42D37C.toInt() else 0xFFFFD166.toInt()
+        systemStatusText.text = statusText
+        systemStatusText.setTextColor(color)
     }
 
 
