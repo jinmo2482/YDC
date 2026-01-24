@@ -3,13 +3,17 @@ package com.example.groundcontrolapp
 import io.dronefleet.mavlink.MavlinkConnection
 import io.dronefleet.mavlink.common.Attitude
 import io.dronefleet.mavlink.common.BatteryStatus
+import io.dronefleet.mavlink.common.CommandLong
 import io.dronefleet.mavlink.common.GlobalPositionInt
 import io.dronefleet.mavlink.common.GpsRawInt
 import io.dronefleet.mavlink.common.LocalPositionNed
+import io.dronefleet.mavlink.common.SetMode
 import io.dronefleet.mavlink.common.Statustext
 import io.dronefleet.mavlink.common.SysStatus
+import io.dronefleet.mavlink.common.MavCmd
 import io.dronefleet.mavlink.minimal.Heartbeat
 import io.dronefleet.mavlink.minimal.MavModeFlag
+import io.dronefleet.mavlink.util.EnumValue
 import java.net.InetSocketAddress
 import java.net.Socket
 import kotlin.concurrent.thread
@@ -30,6 +34,8 @@ class MavlinkTcpClient(
     private var running = false
     private var worker: Thread? = null
     private var socket: Socket? = null
+    @Volatile
+    private var connection: MavlinkConnection? = null
     private val lock = Any()
     private var state = DroneState()
 
@@ -61,9 +67,10 @@ class MavlinkTcpClient(
                 updateState { it.copy(connected = true) }
                 backoffMs = 1000L
 
-                val connection = MavlinkConnection.create(sock.getInputStream(), sock.getOutputStream())
+                val mavlink = MavlinkConnection.create(sock.getInputStream(), sock.getOutputStream())
+                connection = mavlink
                 while (running && !sock.isClosed) {
-                    val message = connection.next()
+                    val message = mavlink.next()
                     handleMessage(message.payload)
                 }
             } catch (e: Exception) {
@@ -74,6 +81,7 @@ class MavlinkTcpClient(
                     callbacks.onLogLine("提示：TCP 可能只允许一个客户端，QGC 占用端口？")
                 }
             } finally {
+                connection = null
                 socket?.close()
                 socket = null
             }
@@ -81,6 +89,47 @@ class MavlinkTcpClient(
             if (!running) break
             Thread.sleep(backoffMs)
             backoffMs = (backoffMs * 2).coerceAtMost(5000L)
+        }
+    }
+
+    fun armAndSetOffboard(): Boolean {
+        val mavlink = connection
+        if (mavlink == null) {
+            callbacks.onLogLine("MAVLink: 未连接，无法发送指令")
+            return false
+        }
+        return try {
+            val targetSystem = 1
+            val targetComponent = 1
+            val gcsSystem = 255
+            val gcsComponent = 190
+
+            val armCommand = CommandLong.builder()
+                .targetSystem(targetSystem)
+                .targetComponent(targetComponent)
+                .command(MavCmd.MAV_CMD_COMPONENT_ARM_DISARM)
+                .param1(1f)
+                .param2(0f)
+                .param3(0f)
+                .param4(0f)
+                .param5(0f)
+                .param6(0f)
+                .param7(0f)
+                .build()
+            mavlink.send1(gcsSystem, gcsComponent, armCommand)
+
+            val offboardMode = 6L shl 16
+            val setMode = SetMode.builder()
+                .targetSystem(targetSystem)
+                .baseMode(EnumValue.of(MavModeFlag.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED))
+                .customMode(offboardMode)
+                .build()
+            mavlink.send1(gcsSystem, gcsComponent, setMode)
+            callbacks.onLogLine("MAVLink: 已发送解锁 + OFFBOARD 指令")
+            true
+        } catch (e: Exception) {
+            callbacks.onLogLine("MAVLink: 指令发送失败 (${e.message ?: "unknown error"})")
+            false
         }
     }
 
