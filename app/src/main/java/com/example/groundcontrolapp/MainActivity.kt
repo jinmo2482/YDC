@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
+import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
@@ -21,6 +21,7 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.ui.PlayerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -146,17 +147,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun enableImmersiveFullscreen() {
-        // 让内容延伸到系统栏下面
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        applyImmersiveToWindow(window)
+    }
 
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
+    private fun applyImmersiveToWindow(targetWindow: Window) {
+        // 让内容延伸到系统栏下面
+        WindowCompat.setDecorFitsSystemWindows(targetWindow, false)
+
+        val controller = WindowInsetsControllerCompat(targetWindow, targetWindow.decorView)
         controller.hide(WindowInsetsCompat.Type.systemBars())
         controller.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         // 旧设备兜底（Android 8/9 某些机器必须要）
         @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility =
+        targetWindow.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                     View.SYSTEM_UI_FLAG_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
@@ -490,10 +495,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showStatusDialog(message: String) {
-        AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_GroundControlApp_StatusDialog)
             .setMessage(message)
             .setPositiveButton("确定", null)
-            .show()
+            .create()
+        dialog.setOnShowListener {
+            dialog.window?.let { applyImmersiveToWindow(it) }
+        }
+        dialog.setOnDismissListener { enableImmersiveFullscreen() }
+        dialog.show()
     }
 
 

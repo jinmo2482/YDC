@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="dialog_background">#FF1C1E24</color>
+    <color name="dialog_stroke">#FF3A3F4B</color>
+    <color name="dialog_text">#FFE6E9F0</color>
+    <color name="dialog_button">#FF86C5FF</color>
 </resources>
