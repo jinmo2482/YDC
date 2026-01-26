@@ -22,6 +22,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var btnNavMap: Button
     private lateinit var btnMapRefresh: Button
     private lateinit var btnMapLoad: Button
+    private lateinit var btnMapPreview: Button
     private lateinit var mapList: ListView
     private lateinit var mapStatus: TextView
     private lateinit var voxelInput: EditText
@@ -57,6 +58,7 @@ class MapActivity : AppCompatActivity() {
         btnNavMap = findViewById(R.id.btnNavMap)
         btnMapRefresh = findViewById(R.id.btnMapRefresh)
         btnMapLoad = findViewById(R.id.btnMapLoad)
+        btnMapPreview = findViewById(R.id.btnMapPreview)
         mapList = findViewById(R.id.mapList)
         mapStatus = findViewById(R.id.tvMapStatus)
         voxelInput = findViewById(R.id.etVoxel)
@@ -94,6 +96,7 @@ class MapActivity : AppCompatActivity() {
         }
         btnMapRefresh.setOnClickListener { loadMaps() }
         btnMapLoad.setOnClickListener { loadSelectedMap() }
+        btnMapPreview.setOnClickListener { previewSelectedMap() }
     }
 
     private fun loadMaps() {
@@ -154,6 +157,18 @@ class MapActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun previewSelectedMap() {
+        val mapName = selectedMap
+        if (mapName.isNullOrBlank()) {
+            Toast.makeText(this, "请先选择地图", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val intent = Intent(this, PointCloudViewerActivity::class.java).apply {
+            putExtra(PointCloudViewerActivity.EXTRA_FILENAME, mapName)
+        }
+        startActivity(intent)
     }
 
     private fun enableImmersiveFullscreen() {
