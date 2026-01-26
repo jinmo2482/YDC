@@ -1,7 +1,5 @@
 package com.example.groundcontrolapp
 
-import com.google.gson.annotations.SerializedName
-
 data class StatusResp(
     val ok: Boolean? = null,
     val state: String? = null,
@@ -37,15 +35,10 @@ data class MapListResp(
 )
 
 data class LoadMapReq(
-    // 兼容后端不同字段名（map_name / filename, voxel_size / voxel）
-    @SerializedName("map_name")
-    val mapName: String,
-    @SerializedName("voxel")
-    val voxel: Double,
-    @SerializedName("filename")
-    val filename: String = mapName,
-    @SerializedName("voxel_size")
-    val voxelSize: Double = voxel
+    // ✅ 你 MapActivity 报错的是 LoadMapReq，本质是“字段名要和你代码/后端一致”
+    // 你这里原来用 filename + voxel，我保留不动
+    val filename: String,
+    val voxel: Double
 )
 
 // 可选：通用简单返回
