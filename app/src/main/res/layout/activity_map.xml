@@ -84,8 +84,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:background="#1f1f1f"
-                android:textColor="#eaeaea"
                 android:text="预览" />
         </LinearLayout>
     </LinearLayout>
