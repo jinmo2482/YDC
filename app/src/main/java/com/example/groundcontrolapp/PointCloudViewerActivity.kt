@@ -1,5 +1,6 @@
 package com.example.groundcontrolapp
 
+import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -13,6 +14,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import java.io.File
+import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class PointCloudViewerActivity : AppCompatActivity() {
@@ -38,8 +40,11 @@ class PointCloudViewerActivity : AppCompatActivity() {
 
         renderer = PointCloudRenderer()
         glSurfaceView = findViewById(R.id.glPointCloud)
+        glSurfaceView.setEGLContextClientVersion(3)
         glSurfaceView.setRenderer(renderer)
-        glSurfaceView.renderMode = PointCloudSurfaceView.RENDERMODE_CONTINUOUSLY
+
+        // ✅ 修复点：常量来自 GLSurfaceView
+        glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
         tvFileName = findViewById(R.id.tvPointCloudFileName)
         tvStatus = findViewById(R.id.tvPointCloudStatus)
@@ -61,7 +66,6 @@ class PointCloudViewerActivity : AppCompatActivity() {
                 val size = progress.coerceAtLeast(1).toFloat()
                 glSurfaceView.queueEvent { renderer.setPointSize(size) }
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
@@ -133,16 +137,22 @@ class PointCloudViewerActivity : AppCompatActivity() {
 
     private fun downloadAndLoad(filename: String) {
         val baseUrl = AppPrefs.baseUrl(this)
-        val url = "$baseUrl/api/maps/preview/$filename?t=${System.currentTimeMillis()}"
-        tvStatus.text = "下载中..."
+        val encoded = URLEncoder.encode(filename, "UTF-8")
+        val url = "$baseUrl/api/maps/preview/$encoded?t=${System.currentTimeMillis()}"
+
+        runOnUiThread { tvStatus.text = "下载中..." }
+
         thread {
             try {
-                val bytes = ApiClient.getBytes(url)
+                val bytes = ApiClient.getBytes(url) // 你工程里需要实现 getBytes
                 val safeName = filename.replace("/", "_")
-                val targetFile = File(cacheDir, "preview_$safeName")
+                val targetFile = File(cacheDir, "preview_$safeName.ply")
                 targetFile.writeBytes(bytes)
+
                 val data = PlyParser.parse(targetFile)
+
                 glSurfaceView.queueEvent { renderer.updatePointCloud(data) }
+
                 runOnUiThread {
                     tvStatus.text = "加载完成：${data.pointCount} 点"
                 }
@@ -165,11 +175,11 @@ class PointCloudViewerActivity : AppCompatActivity() {
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                View.SYSTEM_UI_FLAG_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
 
     companion object {
