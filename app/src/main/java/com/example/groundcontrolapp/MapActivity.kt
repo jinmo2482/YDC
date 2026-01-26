@@ -142,7 +142,7 @@ class MapActivity : AppCompatActivity() {
         btnMapLoad.isEnabled = false
         thread {
             try {
-                val body = Json.gson.toJson(LoadMapReq(mapName = mapName, voxel = voxel))
+                val body = Json.gson.toJson(LoadMapReq(mapName, voxel))
                 ApiClient.post("$baseUrl/api/maps/load", body)
                 runOnUiThread {
                     mapStatus.text = "已请求加载地图：$mapName (voxel=$voxel)"
