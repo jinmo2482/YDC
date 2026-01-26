@@ -33,4 +33,16 @@ object ApiClient {
             return txt
         }
     }
+
+    fun getBytes(url: String): ByteArray {
+        val req = Request.Builder().url(url).get().build()
+        client.newCall(req).execute().use { resp ->
+            val body = resp.body?.bytes() ?: ByteArray(0)
+            if (!resp.isSuccessful) {
+                val err = String(body)
+                throw RuntimeException("HTTP ${resp.code}: $err")
+            }
+            return body
+        }
+    }
 }
