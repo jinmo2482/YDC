@@ -690,15 +690,27 @@ class MainActivity : AppCompatActivity() {
         busy = true
         setButtonsEnabled(false)
 
+        val base = AppPrefs.baseUrl(this)
+
         thread {
             try {
-                runOnUiThread { addLog("MAVLink 解锁并切换 OFFBOARD…") }
-                val ok = mavlinkClient?.armAndSetOffboard() == true
+                runOnUiThread { addLog("调用 API：开始任务 /api/mission/start …") }
+
+                // 请求体：跟你后端 StartMissionReq 对齐
+                val body = Json.gson.toJson(
+                    mapOf(
+                        "mode" to "OFFBOARD",
+                        "arm" to true
+                    )
+                )
+
+                val respText = ApiClient.post("$base/api/mission/start", body)
+
                 runOnUiThread {
-                    if (ok) {
-                        addLog("已发送 ✅")
-                    } else {
-                        addLog("发送失败 ❌")
+                    addLog("已发送 ✅")
+                    if (respText.isNotBlank()) {
+                        // 可选：只显示一行，避免把 UI 撑爆
+                        addLog("resp: ${respText.take(200)}")
                     }
                 }
             } catch (e: Exception) {
