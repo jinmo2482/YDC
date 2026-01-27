@@ -74,12 +74,15 @@ class MapActivity : AppCompatActivity() {
     private fun setupNav() {
         btnNavStatus.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
         btnNavExplore.setOnClickListener {
             startActivity(Intent(this, ExploreActivity::class.java))
+            finish()
         }
         btnNavVideo.setOnClickListener {
             startActivity(Intent(this, VideoActivity::class.java))
+            finish()
         }
         btnNavMap.setOnClickListener {
             // 当前页面不跳转

@@ -45,15 +45,18 @@ class ExploreActivity : AppCompatActivity() {
     private fun setupNav() {
         btnNavStatus.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
         btnNavExplore.setOnClickListener {
             // 当前页面不跳转
         }
         btnNavVideo.setOnClickListener {
             startActivity(Intent(this, VideoActivity::class.java))
+            finish()
         }
         btnNavMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
+            finish()
         }
     }
 

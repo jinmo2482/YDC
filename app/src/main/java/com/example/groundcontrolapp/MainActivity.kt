@@ -1,7 +1,6 @@
 package com.example.groundcontrolapp
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,13 +14,6 @@ import android.view.View
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.rtsp.RtspMediaSource
-import androidx.media3.ui.PlayerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
@@ -40,8 +32,6 @@ class MainActivity : AppCompatActivity() {
     // 日志（主界面显示最多 5 行）
     private lateinit var tvLog: TextView
     private lateinit var mainScroll: ScrollView
-    private lateinit var exploreContent: FrameLayout
-    private lateinit var playerView: PlayerView
 
     // 设置
     private lateinit var btnSettings: ImageButton
@@ -90,9 +80,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var player: ExoPlayer? = null
-    private var currentSection = NavSection.STATUS
-
     // 防重入
     @Volatile private var busy = false
     private var systemReady = false
@@ -110,6 +97,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableImmersiveFullscreen()
+        updateNavSelection()
         tvBaseUrl.text = AppPrefs.baseUrl(this)
         tvLog.text = LogStore.latest(5).joinToString("\n")
         startMavlinkClient()
@@ -121,12 +109,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (currentSection == NavSection.VIDEO) {
-            initializePlayer()
-        }
-    }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -139,10 +121,6 @@ class MainActivity : AppCompatActivity() {
         stopMavlinkClient()
     }
 
-    override fun onStop() {
-        super.onStop()
-        releasePlayer()
-    }
 
     private fun enableImmersiveFullscreen() {
         applyImmersiveToWindow(window)
@@ -180,9 +158,6 @@ class MainActivity : AppCompatActivity() {
 
         mainScroll = findViewById(R.id.mainScroll)
         tvLog = findViewById(R.id.tvLog)
-        exploreContent = findViewById(R.id.exploreContent)
-        playerView = findViewById(R.id.playerView)
-        playerView.setShutterBackgroundColor(Color.BLACK)
 
         btnSettings = findViewById(R.id.btnSettings)
 
@@ -237,95 +212,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnNavStatus.setOnClickListener {
-            showSection(NavSection.STATUS)
             mainScroll.smoothScrollTo(0, 0)
         }
         btnNavExplore.setOnClickListener {
-            showSection(NavSection.EXPLORE)
+            startActivity(Intent(this, ExploreActivity::class.java))
+            finish()
         }
         btnNavVideo.setOnClickListener {
-            showSection(NavSection.VIDEO)
+            startActivity(Intent(this, VideoActivity::class.java))
+            finish()
         }
         btnNavMap.setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
+            finish()
         }
-        updateNavSelection(currentSection)
+        updateNavSelection()
     }
 
-    private fun showSection(section: NavSection) {
-        if (currentSection == section) return
-        if (currentSection == NavSection.VIDEO) {
-            releasePlayer()
-        }
-        currentSection = section
-        mainScroll.visibility = if (section == NavSection.STATUS) View.VISIBLE else View.GONE
-        exploreContent.visibility = if (section == NavSection.EXPLORE) View.VISIBLE else View.GONE
-        playerView.visibility = if (section == NavSection.VIDEO) View.VISIBLE else View.GONE
-        updateNavSelection(section)
-        if (section == NavSection.VIDEO) {
-            initializePlayer()
-        }
-    }
-
-    private fun updateNavSelection(section: NavSection) {
-        btnNavStatus.isSelected = section == NavSection.STATUS
-        btnNavExplore.isSelected = section == NavSection.EXPLORE
-        btnNavVideo.isSelected = section == NavSection.VIDEO
+    private fun updateNavSelection() {
+        btnNavStatus.isSelected = true
+        btnNavExplore.isSelected = false
+        btnNavVideo.isSelected = false
         btnNavMap.isSelected = false
-    }
-
-    private fun initializePlayer() {
-        if (player != null) return
-        val rtspUrl = AppPrefs.getRtspUrl(this)
-        val liveConfiguration = MediaItem.LiveConfiguration.Builder()
-            .setTargetOffsetMs(500)
-            .setMinOffsetMs(200)
-            .setMaxOffsetMs(1200)
-            .build()
-        val mediaItem = MediaItem.Builder()
-            .setUri(rtspUrl)
-            .setLiveConfiguration(liveConfiguration)
-            .build()
-        val mediaSource = RtspMediaSource.Factory()
-            .setForceUseRtpTcp(true)
-            .createMediaSource(mediaItem)
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-                500,
-                1500,
-                200,
-                200
-            )
-            .setPrioritizeTimeOverSizeThresholds(true)
-            .build()
-        player = ExoPlayer.Builder(this)
-            .setLoadControl(loadControl)
-            .setWakeMode(C.WAKE_MODE_NETWORK)
-            .build().also { exoPlayer ->
-                playerView.player = exoPlayer
-                exoPlayer.setMediaSource(mediaSource)
-                exoPlayer.addListener(object : Player.Listener {
-                    override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                        exoPlayer.setMediaSource(mediaSource, true)
-                        exoPlayer.prepare()
-                        exoPlayer.playWhenReady = true
-                    }
-                })
-                exoPlayer.prepare()
-                exoPlayer.playWhenReady = true
-            }
-    }
-
-    private fun releasePlayer() {
-        playerView.player = null
-        player?.release()
-        player = null
-    }
-
-    private enum class NavSection {
-        STATUS,
-        EXPLORE,
-        VIDEO
     }
 
     private fun startPolling() {
@@ -457,7 +365,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun shouldAutoScrollToBottom(): Boolean {
-        if (currentSection != NavSection.STATUS) return false
         val child = mainScroll.getChildAt(0) ?: return false
         val distanceToBottom = child.bottom - (mainScroll.height + mainScroll.scrollY)
         val threshold = (mainScroll.resources.displayMetrics.density * 24).roundToInt()
