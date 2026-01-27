@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0f0f10">
+
+    <TextView
+        android:id="@+id/tvExplorePlaceholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="探索内容加载中…"
+        android:textColor="#aaaaaa"
+        android:textSize="14sp" />
+</FrameLayout>
