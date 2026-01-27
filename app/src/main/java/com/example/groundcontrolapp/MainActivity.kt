@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.graphics.Color
 import android.widget.*
 import android.view.Window
 import android.view.WindowManager
@@ -15,6 +16,13 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultLoadControl
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.rtsp.RtspMediaSource
+import androidx.media3.ui.PlayerView
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +62,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnNavExplore: Button
     private lateinit var btnNavVideo: Button
     private lateinit var btnNavMap: Button
+    private lateinit var exploreContent: FrameLayout
+    private lateinit var playerView: PlayerView
+
+    private var player: ExoPlayer? = null
+    private var currentSection: Section = Section.STATUS
 
     // polling
     private val ui = Handler(Looper.getMainLooper())
@@ -92,6 +105,14 @@ class MainActivity : AppCompatActivity() {
         enableImmersiveFullscreen()
         bindViews()
         setupButtons()
+        showSection(Section.STATUS)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (currentSection == Section.VIDEO) {
+            initializePlayer()
+        }
     }
 
     override fun onResume() {
@@ -119,6 +140,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         stopPolling()
         stopMavlinkClient()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        releasePlayer()
     }
 
 
@@ -181,6 +207,9 @@ class MainActivity : AppCompatActivity() {
         btnNavExplore = findViewById(R.id.btnNavExplore)
         btnNavVideo = findViewById(R.id.btnNavVideo)
         btnNavMap = findViewById(R.id.btnNavMap)
+        exploreContent = findViewById(R.id.exploreContent)
+        playerView = findViewById(R.id.playerView)
+        playerView.setShutterBackgroundColor(Color.BLACK)
     }
 
     private fun setupButtons() {
@@ -212,28 +241,125 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnNavStatus.setOnClickListener {
+            showSection(Section.STATUS)
             mainScroll.smoothScrollTo(0, 0)
         }
         btnNavExplore.setOnClickListener {
-            startActivity(Intent(this, ExploreActivity::class.java))
-            finish()
+            showSection(Section.EXPLORE)
         }
         btnNavVideo.setOnClickListener {
-            startActivity(Intent(this, VideoActivity::class.java))
-            finish()
+            showSection(Section.VIDEO)
         }
         btnNavMap.setOnClickListener {
-            startActivity(Intent(this, MapActivity::class.java))
-            finish()
+            showSection(Section.MAP)
         }
         updateNavSelection()
     }
 
     private fun updateNavSelection() {
-        btnNavStatus.isSelected = true
-        btnNavExplore.isSelected = false
-        btnNavVideo.isSelected = false
-        btnNavMap.isSelected = false
+        btnNavStatus.isSelected = currentSection == Section.STATUS
+        btnNavExplore.isSelected = currentSection == Section.EXPLORE
+        btnNavVideo.isSelected = currentSection == Section.VIDEO
+        btnNavMap.isSelected = currentSection == Section.MAP
+    }
+
+    private fun showSection(section: Section) {
+        if (currentSection == section) {
+            updateNavSelection()
+            return
+        }
+        currentSection = section
+        updateNavSelection()
+        when (section) {
+            Section.STATUS -> showStatusContent()
+            Section.EXPLORE -> showFragmentContent(ExploreFragment(), TAG_EXPLORE)
+            Section.VIDEO -> showVideoContent()
+            Section.MAP -> showFragmentContent(MapFragment(), TAG_MAP)
+        }
+    }
+
+    private fun showStatusContent() {
+        mainScroll.visibility = View.VISIBLE
+        exploreContent.visibility = View.GONE
+        playerView.visibility = View.GONE
+        releasePlayer()
+    }
+
+    private fun showVideoContent() {
+        mainScroll.visibility = View.GONE
+        exploreContent.visibility = View.GONE
+        playerView.visibility = View.VISIBLE
+        initializePlayer()
+    }
+
+    private fun showFragmentContent(fragment: androidx.fragment.app.Fragment, tag: String) {
+        mainScroll.visibility = View.GONE
+        playerView.visibility = View.GONE
+        exploreContent.visibility = View.VISIBLE
+        releasePlayer()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.exploreContent, fragment, tag)
+            .commit()
+    }
+
+    private fun initializePlayer() {
+        if (player != null) return
+        val rtspUrl = AppPrefs.getRtspUrl(this)
+        val liveConfiguration = MediaItem.LiveConfiguration.Builder()
+            .setTargetOffsetMs(500)
+            .setMinOffsetMs(200)
+            .setMaxOffsetMs(1200)
+            .build()
+        val mediaItem = MediaItem.Builder()
+            .setUri(rtspUrl)
+            .setLiveConfiguration(liveConfiguration)
+            .build()
+        val mediaSource = RtspMediaSource.Factory()
+            .setForceUseRtpTcp(true)
+            .createMediaSource(mediaItem)
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                500,
+                1500,
+                200,
+                200
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+        player = ExoPlayer.Builder(this)
+            .setLoadControl(loadControl)
+            .setWakeMode(C.WAKE_MODE_NETWORK)
+            .build().also { exoPlayer ->
+                playerView.player = exoPlayer
+                exoPlayer.setMediaSource(mediaSource)
+                exoPlayer.addListener(object : Player.Listener {
+                    override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                        exoPlayer.setMediaSource(mediaSource, true)
+                        exoPlayer.prepare()
+                        exoPlayer.playWhenReady = true
+                    }
+                })
+                exoPlayer.prepare()
+                exoPlayer.playWhenReady = true
+            }
+    }
+
+    private fun releasePlayer() {
+        playerView.player = null
+        player?.release()
+        player = null
+    }
+
+    private enum class Section {
+        STATUS,
+        EXPLORE,
+        VIDEO,
+        MAP
+    }
+
+    companion object {
+        private const val TAG_EXPLORE = "nav_explore"
+        private const val TAG_MAP = "nav_map"
     }
 
     private fun startPolling() {
