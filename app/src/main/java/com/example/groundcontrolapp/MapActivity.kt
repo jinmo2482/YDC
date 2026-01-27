@@ -1,6 +1,9 @@
 package com.example.groundcontrolapp
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -9,9 +12,12 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class MapActivity : AppCompatActivity() {
@@ -28,6 +34,7 @@ class MapActivity : AppCompatActivity() {
     private lateinit var voxelInput: EditText
     private var mapAdapter: MapListAdapter? = null
     private var selectedMap: String? = null
+    private var pendingDownloadMap: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +102,7 @@ class MapActivity : AppCompatActivity() {
             mapStatus.text = "已选择地图：$name"
         }
         btnMapRefresh.setOnClickListener { loadMaps() }
-        btnMapLoad.setOnClickListener { loadSelectedMap() }
+        btnMapLoad.setOnClickListener { downloadSelectedLas() }
         btnMapPreview.setOnClickListener { previewSelectedMap() }
     }
 
@@ -130,26 +137,44 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadSelectedMap() {
+    private fun downloadSelectedLas() {
         val mapName = selectedMap
         if (mapName.isNullOrBlank()) {
             Toast.makeText(this, "请先选择地图", Toast.LENGTH_SHORT).show()
             return
         }
-        val voxel = voxelInput.text.toString().toDoubleOrNull() ?: 0.15
+        if (requiresLegacyStoragePermission() && !hasWriteStoragePermission()) {
+            pendingDownloadMap = mapName
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_WRITE_STORAGE
+            )
+            return
+        }
+        startDownload(mapName)
+    }
+
+    private fun startDownload(mapName: String) {
+        val encodedMapName = URLEncoder.encode(mapName, "UTF-8")
         val baseUrl = AppPrefs.baseUrl(this)
-        mapStatus.text = "加载地图中：$mapName"
+        val downloadUrl = "$baseUrl/api/maps/download_las/$encodedMapName"
+        val lasFileName = if (mapName.endsWith(".pcd", ignoreCase = true)) {
+            mapName.dropLast(4) + ".las"
+        } else {
+            "$mapName.las"
+        }
+        mapStatus.text = "下载中：$lasFileName"
         btnMapLoad.isEnabled = false
         thread {
             try {
-                val body = Json.gson.toJson(LoadMapReq(mapName, voxel))
-                ApiClient.post("$baseUrl/api/maps/load", body)
+                LasDownloader.download(this, downloadUrl, lasFileName)
                 runOnUiThread {
-                    mapStatus.text = "已请求加载地图：$mapName (voxel=$voxel)"
+                    mapStatus.text = "下载完成：$lasFileName"
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    mapStatus.text = "加载失败：${e.message}"
+                    mapStatus.text = "下载失败：${e.message}"
                 }
             } finally {
                 runOnUiThread {
@@ -187,5 +212,38 @@ class MapActivity : AppCompatActivity() {
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+
+    private fun requiresLegacyStoragePermission(): Boolean {
+        return Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+    }
+
+    private fun hasWriteStoragePermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_WRITE_STORAGE) {
+            val granted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            val pendingMap = pendingDownloadMap
+            pendingDownloadMap = null
+            if (granted && !pendingMap.isNullOrBlank()) {
+                startDownload(pendingMap)
+            } else {
+                Toast.makeText(this, "需要存储权限以保存 LAS 文件", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_WRITE_STORAGE = 1001
     }
 }
