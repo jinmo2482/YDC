@@ -122,7 +122,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         btnMapLoad.isEnabled = false
         thread {
             try {
-                LasDownloader.download(requireContext(), downloadUrl, lasFileName)
+                LasDownloader.download(requireContext(), downloadUrl, lasFileName) { downloaded, total ->
+                    postToUi {
+                        mapStatus.text = buildProgressText(lasFileName, downloaded, total)
+                    }
+                }
                 postToUi {
                     mapStatus.text = "下载完成：$lasFileName"
                 }
@@ -135,6 +139,28 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     btnMapLoad.isEnabled = true
                 }
             }
+        }
+    }
+
+    private fun buildProgressText(fileName: String, downloadedBytes: Long, totalBytes: Long): String {
+        return if (totalBytes > 0) {
+            val percent = (downloadedBytes * 100 / totalBytes).toInt()
+            "下载中：$fileName（$percent% ${formatBytes(downloadedBytes)}/${formatBytes(totalBytes)}）"
+        } else {
+            "下载中：$fileName（${formatBytes(downloadedBytes)}）"
+        }
+    }
+
+    private fun formatBytes(bytes: Long): String {
+        if (bytes <= 0) return "0 B"
+        val kb = 1024.0
+        val mb = kb * 1024
+        val gb = mb * 1024
+        return when {
+            bytes >= gb -> String.format("%.2f GB", bytes / gb)
+            bytes >= mb -> String.format("%.2f MB", bytes / mb)
+            bytes >= kb -> String.format("%.2f KB", bytes / kb)
+            else -> "$bytes B"
         }
     }
 
