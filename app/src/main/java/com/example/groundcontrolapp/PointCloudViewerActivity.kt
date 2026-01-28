@@ -23,6 +23,7 @@ class PointCloudViewerActivity : AppCompatActivity() {
     private lateinit var renderer: PointCloudRenderer
     private lateinit var tvFileName: TextView
     private lateinit var tvStatus: TextView
+    private lateinit var btnBack: Button
     private lateinit var btnReset: Button
     private lateinit var seekPointSize: SeekBar
 
@@ -48,12 +49,17 @@ class PointCloudViewerActivity : AppCompatActivity() {
 
         tvFileName = findViewById(R.id.tvPointCloudFileName)
         tvStatus = findViewById(R.id.tvPointCloudStatus)
+        btnBack = findViewById(R.id.btnBack)
         btnReset = findViewById(R.id.btnResetView)
         seekPointSize = findViewById(R.id.seekPointSize)
 
         val filename = intent.getStringExtra(EXTRA_FILENAME).orEmpty()
         tvFileName.text = filename
         tvStatus.text = "准备加载..."
+
+        btnBack.setOnClickListener {
+            finish()
+        }
 
         btnReset.setOnClickListener {
             glSurfaceView.queueEvent { renderer.resetView() }
