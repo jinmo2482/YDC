@@ -37,7 +37,7 @@ class OrbitCamera {
         target[0] = center[0]
         target[1] = center[1]
         target[2] = center[2]
-        distance = max(radius * 2.5f, 1f)
+        distance = (radius * 2.5f).coerceIn(0.5f, 200f)
         yaw = 0f
         pitch = 0f
     }
@@ -49,7 +49,7 @@ class OrbitCamera {
 
     fun zoom(scaleFactor: Float) {
         if (scaleFactor <= 0f) return
-        distance = (distance / scaleFactor).coerceIn(0.2f, 5000f)
+        distance = (distance / scaleFactor).coerceIn(0.5f, 200f)
     }
 
     fun pan(deltaX: Float, deltaY: Float) {

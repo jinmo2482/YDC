@@ -10,6 +10,7 @@ import kotlin.random.Random
 
 data class PlyPointCloud(
     val positions: FloatArray,
+    val colors: FloatArray?,
     val center: FloatArray,
     val radius: Float,
     val pointCount: Int
@@ -60,12 +61,17 @@ object PlyParser {
             val xIndex = vertexProperties.indexOf("x")
             val yIndex = vertexProperties.indexOf("y")
             val zIndex = vertexProperties.indexOf("z")
+            val rIndex = vertexProperties.indexOfFirst { it == "red" || it == "r" }
+            val gIndex = vertexProperties.indexOfFirst { it == "green" || it == "g" }
+            val bIndex = vertexProperties.indexOfFirst { it == "blue" || it == "b" }
+            val hasColor = rIndex >= 0 && gIndex >= 0 && bIndex >= 0
             if (xIndex < 0 || yIndex < 0 || zIndex < 0) {
                 throw IllegalArgumentException("PLY 未包含 x/y/z 属性")
             }
 
             val sampleCount = min(vertexCount, maxPoints)
             val positions = FloatArray(sampleCount * 3)
+            val colors = if (hasColor) FloatArray(sampleCount * 3) else null
 
             var seen = 0
             val random = Random(System.currentTimeMillis())
@@ -82,12 +88,20 @@ object PlyParser {
                 val x = parts[xIndex].toFloatOrNull() ?: 0f
                 val y = parts[yIndex].toFloatOrNull() ?: 0f
                 val z = parts[zIndex].toFloatOrNull() ?: 0f
+                val r = if (hasColor) parseColor(parts, rIndex) else 0f
+                val g = if (hasColor) parseColor(parts, gIndex) else 0f
+                val b = if (hasColor) parseColor(parts, bIndex) else 0f
 
                 if (seen < sampleCount) {
                     val base = seen * 3
                     positions[base] = x
                     positions[base + 1] = y
                     positions[base + 2] = z
+                    if (colors != null) {
+                        colors[base] = r
+                        colors[base + 1] = g
+                        colors[base + 2] = b
+                    }
                 } else {
                     val j = random.nextInt(seen + 1)
                     if (j < sampleCount) {
@@ -95,6 +109,11 @@ object PlyParser {
                         positions[base] = x
                         positions[base + 1] = y
                         positions[base + 2] = z
+                        if (colors != null) {
+                            colors[base] = r
+                            colors[base + 1] = g
+                            colors[base + 2] = b
+                        }
                     }
                 }
                 seen++
@@ -110,11 +129,25 @@ object PlyParser {
 
             return PlyPointCloud(
                 positions = finalPositions,
+                colors = colors?.let { finalColors ->
+                    if (actualCount == sampleCount) {
+                        finalColors
+                    } else {
+                        finalColors.copyOf(actualCount * 3)
+                    }
+                },
                 center = center,
                 radius = radius,
                 pointCount = actualCount
             )
         }
+    }
+
+    private fun parseColor(parts: List<String>, index: Int): Float {
+        if (index < 0 || index >= parts.size) return 0f
+        val value = parts[index].toFloatOrNull() ?: 0f
+        val normalized = if (value > 1f) value / 255f else value
+        return normalized.coerceIn(0f, 1f)
     }
 
     private fun computeBounds(positions: FloatArray, count: Int): Pair<FloatArray, Float> {
