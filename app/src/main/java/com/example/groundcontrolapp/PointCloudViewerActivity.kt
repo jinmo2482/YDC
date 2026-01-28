@@ -53,7 +53,7 @@ class PointCloudViewerActivity : AppCompatActivity() {
 
         val filename = intent.getStringExtra(EXTRA_FILENAME).orEmpty()
         tvFileName.text = filename
-        tvStatus.text = "准备下载..."
+        tvStatus.text = "准备加载..."
 
         btnReset.setOnClickListener {
             glSurfaceView.queueEvent { renderer.resetView() }
@@ -140,7 +140,7 @@ class PointCloudViewerActivity : AppCompatActivity() {
         val encoded = URLEncoder.encode(filename, "UTF-8")
         val url = "$baseUrl/api/maps/preview/$encoded?t=${System.currentTimeMillis()}"
 
-        runOnUiThread { tvStatus.text = "下载中..." }
+        runOnUiThread { tvStatus.text = "加载中..." }
 
         thread {
             try {
