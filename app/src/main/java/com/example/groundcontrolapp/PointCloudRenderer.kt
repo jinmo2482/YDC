@@ -85,7 +85,8 @@ class PointCloudRenderer(
         lastBoundsCenter = data.center
         lastBoundsRadius = data.radius
         pointCount = data.pointCount
-        hasColors = !data.colors.isNullOrEmpty()
+        val colors = data.colors
+        hasColors = (colors != null && colors.isNotEmpty())
 
         if (vboId == 0) {
             val ids = IntArray(1)
@@ -109,7 +110,7 @@ class PointCloudRenderer(
                 GLES30.glGenBuffers(1, ids, 0)
                 colorVboId = ids[0]
             }
-            val colorBuffer = createFloatBuffer(data.colors ?: FloatArray(0))
+            val colorBuffer = createFloatBuffer(colors!!)
             GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, colorVboId)
             GLES30.glBufferData(
                 GLES30.GL_ARRAY_BUFFER,
