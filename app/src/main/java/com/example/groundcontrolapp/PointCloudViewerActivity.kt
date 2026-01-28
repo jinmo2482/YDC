@@ -2,8 +2,6 @@ package com.example.groundcontrolapp
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
@@ -27,13 +25,6 @@ class PointCloudViewerActivity : AppCompatActivity() {
     private lateinit var btnReset: Button
     private lateinit var seekPointSize: SeekBar
 
-    private var lastTouchX = 0f
-    private var lastTouchY = 0f
-    private var lastPanX = 0f
-    private var lastPanY = 0f
-
-    private lateinit var scaleDetector: ScaleGestureDetector
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_point_cloud_viewer)
@@ -43,6 +34,7 @@ class PointCloudViewerActivity : AppCompatActivity() {
         glSurfaceView = findViewById(R.id.glPointCloud)
         glSurfaceView.setEGLContextClientVersion(3)
         glSurfaceView.setRenderer(renderer)
+        glSurfaceView.bindRenderer(renderer)
 
         // ✅ 修复点：常量来自 GLSurfaceView
         glSurfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
@@ -75,47 +67,6 @@ class PointCloudViewerActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
-
-        scaleDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                glSurfaceView.queueEvent { renderer.zoom(detector.scaleFactor) }
-                return true
-            }
-        })
-
-        glSurfaceView.setOnTouchListener { _: View, event: MotionEvent ->
-            scaleDetector.onTouchEvent(event)
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    lastTouchX = event.x
-                    lastTouchY = event.y
-                }
-                MotionEvent.ACTION_POINTER_DOWN -> {
-                    if (event.pointerCount == 2) {
-                        lastPanX = (event.getX(0) + event.getX(1)) / 2f
-                        lastPanY = (event.getY(0) + event.getY(1)) / 2f
-                    }
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    if (event.pointerCount == 1 && !scaleDetector.isInProgress) {
-                        val dx = event.x - lastTouchX
-                        val dy = event.y - lastTouchY
-                        glSurfaceView.queueEvent { renderer.rotate(dx, dy) }
-                        lastTouchX = event.x
-                        lastTouchY = event.y
-                    } else if (event.pointerCount == 2 && !scaleDetector.isInProgress) {
-                        val currentX = (event.getX(0) + event.getX(1)) / 2f
-                        val currentY = (event.getY(0) + event.getY(1)) / 2f
-                        val dx = currentX - lastPanX
-                        val dy = currentY - lastPanY
-                        glSurfaceView.queueEvent { renderer.pan(dx, dy) }
-                        lastPanX = currentX
-                        lastPanY = currentY
-                    }
-                }
-            }
-            true
-        }
 
         if (filename.isBlank()) {
             Toast.makeText(this, "未传入地图文件", Toast.LENGTH_SHORT).show()
