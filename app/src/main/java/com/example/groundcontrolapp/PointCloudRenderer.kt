@@ -6,10 +6,6 @@ import android.opengl.Matrix
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.sin
-import kotlin.math.sqrt
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -24,14 +20,9 @@ class PointCloudRenderer(
 
     private val mvpMatrix = FloatArray(16)
     private val tempMatrix = FloatArray(16)
-    private val viewMatrix = FloatArray(16)
 
     private var lastBoundsCenter = floatArrayOf(0f, 0f, 0f)
     private var lastBoundsRadius = 1f
-    private val target = floatArrayOf(0f, 0f, 0f)
-    private var yaw = 0f
-    private var pitch = 0f
-    private var cameraDistance = 5f
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES30.glClearColor(0f, 0f, 0f, 1f)
@@ -54,7 +45,7 @@ class PointCloudRenderer(
 
         GLES30.glUseProgram(programId)
 
-        val view = updateViewMatrix()
+        val view = camera.getViewMatrix()
         val projection = camera.getProjectionMatrix()
 
         Matrix.multiplyMM(tempMatrix, 0, projection, 0, view, 0)
@@ -104,97 +95,10 @@ class PointCloudRenderer(
         pointSize = size
     }
 
-    fun rotate(dx: Float, dy: Float) {
-        yaw += dx * 0.5f
-        pitch = (pitch + dy * 0.5f).coerceIn(-89f, 89f)
-    }
-
-    fun zoom(scale: Float) {
-        if (scale <= 0f) return
-        cameraDistance = (cameraDistance / scale).coerceIn(0.2f, 5000f)
-    }
-
-    fun pan(dx: Float, dy: Float) {
-        val forward = getForwardVector()
-        val right = cross(forward, floatArrayOf(0f, 1f, 0f))
-        normalize(right)
-        val up = cross(right, forward)
-        normalize(up)
-
-        val scale = cameraDistance * 0.002f
-        target[0] += -dx * scale * right[0] + dy * scale * up[0]
-        target[1] += -dx * scale * right[1] + dy * scale * up[1]
-        target[2] += -dx * scale * right[2] + dy * scale * up[2]
-    }
-
-    fun resetView() {
-        target[0] = lastBoundsCenter[0]
-        target[1] = lastBoundsCenter[1]
-        target[2] = lastBoundsCenter[2]
-        cameraDistance = max(lastBoundsRadius * 2.5f, 1f)
-        yaw = 0f
-        pitch = 0f
-        camera.reset(lastBoundsCenter, lastBoundsRadius)
-    }
-
-    private fun updateViewMatrix(): FloatArray {
-        val yawRad = Math.toRadians(yaw.toDouble())
-        val pitchRad = Math.toRadians(pitch.toDouble())
-        val cosPitch = cos(pitchRad)
-        val sinPitch = sin(pitchRad)
-        val cosYaw = cos(yawRad)
-        val sinYaw = sin(yawRad)
-
-        val eyeX = target[0] + (cameraDistance * (cosPitch * sinYaw)).toFloat()
-        val eyeY = target[1] + (cameraDistance * sinPitch).toFloat()
-        val eyeZ = target[2] + (cameraDistance * (cosPitch * cosYaw)).toFloat()
-
-        Matrix.setLookAtM(
-            viewMatrix,
-            0,
-            eyeX,
-            eyeY,
-            eyeZ,
-            target[0],
-            target[1],
-            target[2],
-            0f,
-            1f,
-            0f
-        )
-        return viewMatrix
-    }
-
-    private fun getForwardVector(): FloatArray {
-        val yawRad = Math.toRadians(yaw.toDouble())
-        val pitchRad = Math.toRadians(pitch.toDouble())
-        val cosPitch = cos(pitchRad)
-        return normalize(
-            floatArrayOf(
-                (cosPitch * sin(yawRad)).toFloat(),
-                sin(pitchRad).toFloat(),
-                (cosPitch * cos(yawRad)).toFloat()
-            )
-        )
-    }
-
-    private fun cross(a: FloatArray, b: FloatArray): FloatArray {
-        return floatArrayOf(
-            a[1] * b[2] - a[2] * b[1],
-            a[2] * b[0] - a[0] * b[2],
-            a[0] * b[1] - a[1] * b[0]
-        )
-    }
-
-    private fun normalize(vec: FloatArray): FloatArray {
-        val len = sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
-        if (len > 0f) {
-            vec[0] /= len
-            vec[1] /= len
-            vec[2] /= len
-        }
-        return vec
-    }
+    fun rotate(dx: Float, dy: Float) = camera.rotate(dx, dy)
+    fun zoom(scale: Float) = camera.zoom(scale)
+    fun pan(dx: Float, dy: Float) = camera.pan(dx, dy)
+    fun resetView() = camera.reset(lastBoundsCenter, lastBoundsRadius)
 
     private fun createFloatBuffer(data: FloatArray): FloatBuffer {
         val buf = ByteBuffer.allocateDirect(data.size * 4)
