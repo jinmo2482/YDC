@@ -34,6 +34,9 @@ class PointCloudViewerActivity : AppCompatActivity() {
     private var lastPanY = 0f
     private var lastPinchDistance = 0f
     private var isPinching = false
+    private var suppressRotateUntil = 0L
+    private val rotateSpeed = 0.3f
+    private val rotateDebounceMs = 120L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,8 +98,13 @@ class PointCloudViewerActivity : AppCompatActivity() {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (event.pointerCount == 1 && !isPinching) {
-                        val dx = event.x - lastTouchX
-                        val dy = event.y - lastTouchY
+                        if (System.currentTimeMillis() < suppressRotateUntil) {
+                            lastTouchX = event.x
+                            lastTouchY = event.y
+                            return@setOnTouchListener true
+                        }
+                        val dx = (event.x - lastTouchX) * rotateSpeed
+                        val dy = (event.y - lastTouchY) * rotateSpeed
                         glSurfaceView.queueEvent { renderer.rotate(dx, dy) }
                         lastTouchX = event.x
                         lastTouchY = event.y
@@ -129,6 +137,7 @@ class PointCloudViewerActivity : AppCompatActivity() {
                 MotionEvent.ACTION_CANCEL -> {
                     isPinching = false
                     lastPinchDistance = 0f
+                    suppressRotateUntil = System.currentTimeMillis() + rotateDebounceMs
                 }
             }
             true
