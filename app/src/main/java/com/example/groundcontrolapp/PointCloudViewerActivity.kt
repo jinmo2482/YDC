@@ -76,19 +76,12 @@ class PointCloudViewerActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
 
-        scaleDetector = ScaleGestureDetector(
-            this,
-            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                    return true
-                }
-
-                override fun onScale(detector: ScaleGestureDetector): Boolean {
-                    glSurfaceView.queueEvent { renderer.zoom(detector.scaleFactor) }
-                    return true
-                }
+        scaleDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                glSurfaceView.queueEvent { renderer.zoom(detector.scaleFactor) }
+                return true
             }
-        )
+        })
 
         glSurfaceView.setOnTouchListener { _: View, event: MotionEvent ->
             scaleDetector.onTouchEvent(event)
@@ -102,19 +95,6 @@ class PointCloudViewerActivity : AppCompatActivity() {
                         lastPanX = (event.getX(0) + event.getX(1)) / 2f
                         lastPanY = (event.getY(0) + event.getY(1)) / 2f
                     }
-                }
-                MotionEvent.ACTION_POINTER_UP -> {
-                    if (event.pointerCount == 2) {
-                        val remainingIndex = if (event.actionIndex == 0) 1 else 0
-                        lastTouchX = event.getX(remainingIndex)
-                        lastTouchY = event.getY(remainingIndex)
-                    }
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    lastTouchX = 0f
-                    lastTouchY = 0f
-                    lastPanX = 0f
-                    lastPanY = 0f
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (event.pointerCount == 1 && !scaleDetector.isInProgress) {
