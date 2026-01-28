@@ -3,7 +3,6 @@ package com.example.groundcontrolapp
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.view.MotionEvent
-import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
@@ -16,6 +15,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import java.io.File
 import java.net.URLEncoder
 import kotlin.concurrent.thread
+import kotlin.math.abs
+import kotlin.math.hypot
 
 class PointCloudViewerActivity : AppCompatActivity() {
 
@@ -31,8 +32,11 @@ class PointCloudViewerActivity : AppCompatActivity() {
     private var lastTouchY = 0f
     private var lastPanX = 0f
     private var lastPanY = 0f
-
-    private lateinit var scaleDetector: ScaleGestureDetector
+    private var lastPinchDistance = 0f
+    private var isPinching = false
+    private var suppressRotateUntil = 0L
+    private val rotateSpeed = 0.3f
+    private val rotateDebounceMs = 120L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,42 +80,64 @@ class PointCloudViewerActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
         })
 
-        scaleDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                glSurfaceView.queueEvent { renderer.zoom(detector.scaleFactor) }
-                return true
-            }
-        })
-
         glSurfaceView.setOnTouchListener { _: View, event: MotionEvent ->
-            scaleDetector.onTouchEvent(event)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     lastTouchX = event.x
                     lastTouchY = event.y
+                    isPinching = false
+                    lastPinchDistance = 0f
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {
                     if (event.pointerCount == 2) {
                         lastPanX = (event.getX(0) + event.getX(1)) / 2f
                         lastPanY = (event.getY(0) + event.getY(1)) / 2f
+                        lastPinchDistance = spacing(event)
+                        isPinching = false
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    if (event.pointerCount == 1 && !scaleDetector.isInProgress) {
-                        val dx = event.x - lastTouchX
-                        val dy = event.y - lastTouchY
+                    if (event.pointerCount == 1 && !isPinching) {
+                        if (System.currentTimeMillis() < suppressRotateUntil) {
+                            lastTouchX = event.x
+                            lastTouchY = event.y
+                            return@setOnTouchListener true
+                        }
+                        val dx = (event.x - lastTouchX) * rotateSpeed
+                        val dy = (event.y - lastTouchY) * rotateSpeed
                         glSurfaceView.queueEvent { renderer.rotate(dx, dy) }
                         lastTouchX = event.x
                         lastTouchY = event.y
-                    } else if (event.pointerCount == 2 && !scaleDetector.isInProgress) {
+                    } else if (event.pointerCount == 2) {
                         val currentX = (event.getX(0) + event.getX(1)) / 2f
                         val currentY = (event.getY(0) + event.getY(1)) / 2f
-                        val dx = currentX - lastPanX
-                        val dy = currentY - lastPanY
-                        glSurfaceView.queueEvent { renderer.pan(dx, dy) }
+                        val currentDistance = spacing(event)
+                        var didPinch = false
+                        if (lastPinchDistance > 0f) {
+                            val scale = currentDistance / lastPinchDistance
+                            if (abs(scale - 1f) > 0.005f) {
+                                glSurfaceView.queueEvent { renderer.zoom(scale) }
+                                didPinch = true
+                            }
+                        }
+                        lastPinchDistance = currentDistance
+                        isPinching = didPinch
+
+                        if (!didPinch) {
+                            val dx = currentX - lastPanX
+                            val dy = currentY - lastPanY
+                            glSurfaceView.queueEvent { renderer.pan(dx, dy) }
+                        }
                         lastPanX = currentX
                         lastPanY = currentY
                     }
+                }
+                MotionEvent.ACTION_POINTER_UP,
+                MotionEvent.ACTION_UP,
+                MotionEvent.ACTION_CANCEL -> {
+                    isPinching = false
+                    lastPinchDistance = 0f
+                    suppressRotateUntil = System.currentTimeMillis() + rotateDebounceMs
                 }
             }
             true
@@ -190,5 +216,12 @@ class PointCloudViewerActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_FILENAME = "filename"
+    }
+
+    private fun spacing(event: MotionEvent): Float {
+        if (event.pointerCount < 2) return 0f
+        val dx = event.getX(0) - event.getX(1)
+        val dy = event.getY(0) - event.getY(1)
+        return hypot(dx, dy)
     }
 }
