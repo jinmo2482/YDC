@@ -15,10 +15,8 @@ class PointCloudRenderer(
 
     private var programId = 0
     private var vboId = 0
-    private var colorVboId = 0
     private var pointCount = 0
     private var pointSize = 3f
-    private var hasColors = false
 
     private val mvpMatrix = FloatArray(16)
     private val tempMatrix = FloatArray(16)
@@ -63,21 +61,9 @@ class PointCloudRenderer(
         GLES30.glEnableVertexAttribArray(0)
         GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 3 * 4, 0)
 
-        if (hasColors && colorVboId != 0) {
-            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, colorVboId)
-            GLES30.glEnableVertexAttribArray(1)
-            GLES30.glVertexAttribPointer(1, 3, GLES30.GL_FLOAT, false, 3 * 4, 0)
-        } else {
-            GLES30.glDisableVertexAttribArray(1)
-            GLES30.glVertexAttrib4f(1, 1f, 1f, 1f, 1f)
-        }
-
         GLES30.glDrawArrays(GLES30.GL_POINTS, 0, pointCount)
 
         GLES30.glDisableVertexAttribArray(0)
-        if (hasColors && colorVboId != 0) {
-            GLES30.glDisableVertexAttribArray(1)
-        }
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0)
     }
 
@@ -85,8 +71,6 @@ class PointCloudRenderer(
         lastBoundsCenter = data.center
         lastBoundsRadius = data.radius
         pointCount = data.pointCount
-        val colors = data.colors
-        hasColors = (colors != null && colors.isNotEmpty())
 
         if (vboId == 0) {
             val ids = IntArray(1)
@@ -103,27 +87,6 @@ class PointCloudRenderer(
             GLES30.GL_STATIC_DRAW
         )
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0)
-
-        if (hasColors) {
-            if (colorVboId == 0) {
-                val ids = IntArray(1)
-                GLES30.glGenBuffers(1, ids, 0)
-                colorVboId = ids[0]
-            }
-            val colorBuffer = createFloatBuffer(colors!!)
-            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, colorVboId)
-            GLES30.glBufferData(
-                GLES30.GL_ARRAY_BUFFER,
-                colorBuffer.capacity() * 4,
-                colorBuffer,
-                GLES30.GL_STATIC_DRAW
-            )
-            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0)
-        } else if (colorVboId != 0) {
-            val ids = intArrayOf(colorVboId)
-            GLES30.glDeleteBuffers(1, ids, 0)
-            colorVboId = 0
-        }
 
         resetView()
     }
@@ -187,24 +150,20 @@ class PointCloudRenderer(
         private const val VERTEX_SHADER = """
             #version 300 es
             layout(location = 0) in vec3 aPosition;
-            layout(location = 1) in vec3 aColor;
             uniform mat4 uMvp;
             uniform float uPointSize;
-            out vec3 vColor;
             void main() {
                 gl_Position = uMvp * vec4(aPosition, 1.0);
                 gl_PointSize = uPointSize;
-                vColor = aColor;
             }
         """
 
         private const val FRAGMENT_SHADER = """
             #version 300 es
             precision mediump float;
-            in vec3 vColor;
             out vec4 fragColor;
             void main() {
-                fragColor = vec4(vColor, 1.0);
+                fragColor = vec4(1.0, 1.0, 1.0, 1.0);
             }
         """
     }
