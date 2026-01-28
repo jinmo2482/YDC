@@ -51,8 +51,10 @@ class MapFragment : Fragment(R.layout.fragment_map) {
     private fun setupMapUi() {
         mapAdapter = MapListAdapter(requireContext(), mutableListOf())
         mapList.adapter = mapAdapter
+        mapList.choiceMode = ListView.CHOICE_MODE_SINGLE
         mapList.setOnItemClickListener { _, _, position, _ ->
             selectedMap = mapAdapter?.getItem(position)
+            mapList.setItemChecked(position, true)
             val name = selectedMap ?: "未选择"
             mapStatus.text = "已选择地图：$name"
         }
@@ -73,6 +75,13 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 postToUi {
                     mapAdapter?.setItems(maps)
                     selectedMap = maps.firstOrNull()
+                    mapList.clearChoices()
+                    selectedMap?.let { map ->
+                        val index = maps.indexOf(map)
+                        if (index >= 0) {
+                            mapList.setItemChecked(index, true)
+                        }
+                    }
                     val status = if (maps.isEmpty()) {
                         "未发现地图文件"
                     } else {
